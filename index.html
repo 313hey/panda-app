@@ -678,84 +678,6 @@
  <body class="h-full w-full overflow-auto">
   <div id="app" class="min-h-full w-full"></div>
   <script>
-
-    // ===== GitHub Pages 兼容层：用 localStorage 模拟 Canva dataSdk / elementSdk =====
-    (function () {
-      // elementSdk：只提供 config（可选）
-      if (!window.elementSdk) {
-        window.elementSdk = {
-          config: {},
-          init: function ({ defaultConfig }) {
-            window.elementSdk.config = Object.assign({}, defaultConfig);
-          }
-        };
-      }
-
-      // 简单的“数据库”：存到浏览器 localStorage（注意：不同设备/不同浏览器之间不会共享）
-      const LS_KEY = 'cd_time_travel_users_v1';
-
-      function loadAll() {
-        try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
-        catch (e) { return []; }
-      }
-      function saveAll(arr) {
-        localStorage.setItem(LS_KEY, JSON.stringify(arr));
-      }
-
-      function ensureIds(arr) {
-        let changed = false;
-        arr.forEach(u => {
-          if (!u.__backendId) { u.__backendId = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '_' + Math.random().toString(16).slice(2)); changed = true; }
-        });
-        if (changed) saveAll(arr);
-      }
-
-      // dataSdk：提供 init/create/update/list
-      window.dataSdk = {
-        async init(handler) {
-          const data = loadAll();
-          ensureIds(data);
-          // 初次回调
-          if (handler && typeof handler.onDataChanged === 'function') handler.onDataChanged(data);
-          return { isOk: true, data };
-        },
-        async create(record) {
-          const data = loadAll();
-          const newRec = Object.assign({}, record);
-          newRec.__backendId = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '_' + Math.random().toString(16).slice(2));
-          data.push(newRec);
-          saveAll(data);
-          return { isOk: true, data: newRec };
-        },
-        async update(record) {
-          const data = loadAll();
-          const idx = data.findIndex(u => u.__backendId === record.__backendId);
-          if (idx >= 0) data[idx] = Object.assign({}, record);
-          else data.push(Object.assign({}, record));
-          saveAll(data);
-          return { isOk: true, data: record };
-        },
-        async list() {
-          const data = loadAll();
-          ensureIds(data);
-          return { isOk: true, data };
-        }
-      };
-    })();
-
-    // ===== 管理员鉴权（静态站“基础保护”，无法做到真正隐藏） =====
-    const ADMIN_USERNAME = 'admin';
-    // 默认密码：Panda-2026!  （你部署后务必改）
-    const ADMIN_PASSWORD_SHA256 = '442deb6fdc91269cd17e858311b19ad86758d5f85407ffc5b1c9793ec50300ba';
-
-    async function sha256(text) {
-      const data = new TextEncoder().encode(text);
-      const hash = await crypto.subtle.digest('SHA-256', data);
-      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-    function isAdminAuthed() { return localStorage.getItem('adminAuthed') === '1'; }
-    function setAdminAuthed(v) { v ? localStorage.setItem('adminAuthed', '1') : localStorage.removeItem('adminAuthed'); }
-
     const defaultConfig = {
       site_title: "成都时空穿越任务",
       site_subtitle: "熊猫守护者 × 三星堆解码员",
@@ -834,7 +756,7 @@
         emoji: '👶', 
         name: '熊猫宝宝',
         fact: '刚出生的熊猫宝宝只有100克重，像一只小老鼠！要6-8周才能睁开眼睛。',
-        question: '熊猫宝宝刚出生多重？',
+        question: '熊猫宝宝刚出生��多重？',
         interaction: 'slider',
         sliderMin: 50,
         sliderMax: 500,
@@ -847,9 +769,9 @@
       { id: 'bamboo', emoji: '🎋', name: '新鲜竹子', health: 30, energy: 25 },
       { id: 'bamboo-shoot', emoji: '🌱', name: '竹笋', health: 25, energy: 30 },
       { id: 'apple', emoji: '🍎', name: '苹果', health: 15, energy: 20 },
-      { id: 'carrot', emoji: '🥕', name: '胡萝卜', health: 10, energy: 15 },
+      { id: 'carrot', emoji: '🥕', name: '��萝卜', health: 10, energy: 15 },
       { id: 'candy', emoji: '🍬', name: '糖果', health: -20, energy: 5 },
-      { id: 'chips', emoji: '🍟', name: '薯条', health: -25, energy: 10 }
+      { id: 'chips', emoji: '🍟', name: '���条', health: -25, energy: 10 }
     ];
 
     const comicScenes = [
@@ -870,8 +792,8 @@
       {
         text: '你看到有人在熊猫馆用闪光灯拍照...',
         choices: [
-          { text: '提醒他关闭闪光灯', correct: true, feedback: '做得对！闪光灯会惊吓和伤害熊猫的眼睛。' },
-          { text: '不管他，继续参观', correct: false, feedback: '闪光灯会伤害熊猫，我们应该及时制止哦！' }
+          { text: '提醒他关闭闪光灯', correct: true, feedback: '做得对���闪光灯会惊��和伤害熊猫的眼睛。' },
+          { text: '不管他，继续参观', correct: false, feedback: '闪光灯会伤害熊猫，���们应该及时制止哦！' }
         ]
       }
     ];
@@ -897,9 +819,9 @@
         clues: [
           '我高达3.96米，是青铜器中的巨人',
           '我的枝头站着9只神鸟',
-          '古人相信我连接天地'
+          '古人相信我����接天地'
         ],
-        knowledge: '青铜神树高3.96米，是世界上最大的单件青铜文物。树分三层，每层有三根树枝，枝头站着9只神鸟。它��征着"通天神树"，反映��古蜀人认为神树可以沟通天地��神的宇宙观。'
+        knowledge: '青铜神树高3.96米，是世界上最大的单件青铜文物。树分三层，每层有三���树枝，枝头站着9只神鸟。它��征着"通天神树"，反映��古蜀人认为神树可以沟通天地��神的宇宙观。'
       },
       { 
         id: 'bird', 
@@ -931,7 +853,7 @@
       { emoji: '🏺', name: '陶罐', category: 'ancient' },
       { emoji: '⚱️', name: '青铜器', category: 'ancient' },
       { emoji: '📱', name: '手机', category: 'modern' },
-      { emoji: '🔍', name: '放大镜', category: 'modern' },
+      { emoji: '🔍', name: '放���镜', category: 'modern' },
       { emoji: '🗿', name: '雕像', category: 'ancient' },
       { emoji: '💎', name: '玉石', category: 'ancient' },
       { emoji: '⌚', name: '手表', category: 'modern' },
@@ -942,58 +864,239 @@
       { emoji: '🔦', name: '手电筒', category: 'modern' }
     ];
 
-    const dataHandler = {
-      onDataChanged(data) {
-        allUsers = data;
-        
-        const savedUserId = localStorage.getItem('currentUserId');
-        if (savedUserId && !currentUser) {
-          const savedUser = data.find(u => u.__backendId === savedUserId);
-          if (savedUser) {
-            currentUser = savedUser;
-            currentView = 'dashboard';
-            console.log('自动登录成功:', savedUser.displayName);
-          }
-        }
-        
-        if (currentUser && currentUser.__backendId) {
-          const updated = data.find(u => u.__backendId === currentUser.__backendId);
-          if (updated) {
-            currentUser = updated;
-          }
-        }
-        
-        if (document.getElementById('app').innerHTML === '') {
-          render();
-        }
-      }
-    };
+        // =========================
+    // Google Sheets Backend (Apps Script)
+    // =========================
+    const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycbz0XiaHj5cZ3ayKG8Q6XERfM-6_qqEomoNNGJO5uu1cwXJzcazebX3MRDmNxonZ2Fk/exec";
+    const BACKEND_API_KEY = "panda_9a3f1c_2026";
 
-    async function init() {
-      const result = await window.dataSdk.init(dataHandler);
-      if (!result.isOk) {
-        showToast('初始化失败，请刷新页��', 'error');
+    // Minimal backend client (fetch POST + JSONP GET fallback)
+    const PandaBackend = (() => {
+      let ENDPOINT = '';
+      let API_KEY = '';
+
+      function init({ endpoint, apiKey }) {
+        ENDPOINT = endpoint;
+        API_KEY = apiKey;
       }
+
+      function _qs(obj) {
+        const p = new URLSearchParams();
+        for (const [k,v] of Object.entries(obj)) {
+          if (v === undefined || v === null) continue;
+          p.set(k, String(v));
+        }
+        return p.toString();
+      }
+
+      function _jsonp(url) {
+        return new Promise((resolve, reject) => {
+          const cb = 'cb_' + Math.random().toString(16).slice(2);
+          const script = document.createElement('script');
+          const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error('jsonp_timeout'));
+          }, 12000);
+
+          function cleanup() {
+            clearTimeout(timeout);
+            if (script.parentNode) script.parentNode.removeChild(script);
+            try { delete window[cb]; } catch(e) { window[cb] = undefined; }
+          }
+
+          window[cb] = (data) => {
+            cleanup();
+            resolve(data);
+          };
+
+          script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+          script.onerror = () => {
+            cleanup();
+            reject(new Error('jsonp_error'));
+          };
+          document.head.appendChild(script);
+        });
+      }
+
+      async function _post(action, payload) {
+        const body = Object.assign({ action, apiKey: API_KEY }, payload || {});
+        try {
+          const res = await fetch(ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          return await res.json();
+        } catch (e) {
+          // fallback to JSONP GET (helps when CORS blocks)
+          const url = ENDPOINT + '?' + _qs(body);
+          return await _jsonp(url);
+        }
+      }
+
+      const register = (email, password) => _post('register', { email, password });
+      const login = (email, password) => _post('login', { email, password });
+      const saveProgress = (userId, chapter, payloadObj) =>
+        _post('saveProgress', { userId, chapter, payloadJson: JSON.stringify(payloadObj || {}) });
+      const loadProgress = (userId) => _post('loadProgress', { userId });
+
+      const adminListUsers = (adminUser, adminPass) => _post('adminListUsers', { adminUser, adminPass });
+      const adminGetUserProgress = (adminUser, adminPass, userId) =>
+        _post('adminGetUserProgress', { adminUser, adminPass, userId });
+
+      return { init, register, login, saveProgress, loadProgress, adminListUsers, adminGetUserProgress };
+    })();
+
+    function _parseJson(s) {
+      try { return JSON.parse(s || '{}'); } catch(e) { return {}; }
     }
 
-    async function register(username, password, displayName, avatar) {
+    async function hydrateUserFromBackend(userId) {
+      const r = await PandaBackend.loadProgress(userId);
+      if (!r || !r.ok) return null;
+      const items = r.items || [];
+      const by = new Map(items.map(it => [String(it.chapter), _parseJson(it.payloadJson)]));
+
+      const dash = by.get('dashboard') || {};
+      const profile = by.get('profile') || {};
+
+      const user = {
+        __backendId: userId,
+        username: dash.username || profile.username || localStorage.getItem('currentUsername') || '',
+        displayName: dash.displayName || profile.displayName || '探险者',
+        avatar: dash.avatar || profile.avatar || '🐼',
+        lastActive: dash.lastActive || '',
+        chapter4Code: dash.chapter4Code || '',
+      };
+
+      for (let i=1;i<=6;i++) {
+        const c = by.get(String(i)) || {};
+        user[`chapter${i}Complete`] = !!(c.done || dash[`chapter${i}Complete`]);
+      }
+      return user;
+    }
+
+    async function saveDashboardSnapshot() {
+      if (!currentUser || !currentUser.__backendId) return;
+      const now = new Date().toISOString();
+      const snap = {
+        username: currentUser.username,
+        displayName: currentUser.displayName,
+        avatar: currentUser.avatar,
+        lastActive: currentUser.lastActive || now,
+        chapter4Code: currentUser.chapter4Code || '',
+      };
+      for (let i=1;i<=6;i++) {
+        snap[`chapter${i}Complete`] = !!currentUser[`chapter${i}Complete`];
+      }
+      await PandaBackend.saveProgress(currentUser.__backendId, 'dashboard', snap);
+    }
+    function saveDashboardSnapshotLater() {
+      // Fire-and-forget wrapper for onclick handlers
+      try { saveDashboardSnapshot().catch(() => {}); } catch(e) {}
+    }
+
+
+
+    // Admin state (hidden entry: add #admin to the URL)
+    let adminSession = null;
+    let adminUsersCache = [];
+    let adminSelectedUserId = null;
+    let adminSelectedUserProgress = [];
+
+    async function init() {
+      PandaBackend.init({ endpoint: BACKEND_ENDPOINT, apiKey: BACKEND_API_KEY });
+
+      if (location.hash === '#admin') {
+        currentView = 'adminAuth';
+        render();
+        return;
+      }
+
+      const savedUserId = localStorage.getItem('currentUserId');
+      if (savedUserId) {
+        const user = await hydrateUserFromBackend(savedUserId);
+        if (user) {
+          currentUser = user;
+          currentView = 'dashboard';
+        }
+      }
+      render();
+    }
+
+    }
+
+        async function register(username, password, displayName, avatar) {
       if (!username || !password || !displayName) {
         showToast('请填写所有信息', 'error');
         return;
       }
 
-      const existing = allUsers.find(u => u.username === username);
-      if (existing) {
-        showToast('用户名已存在', 'error');
+      // Backend register (we treat "username" as the login id)
+      const r = await PandaBackend.register(username, password);
+      if (!r || !r.ok) {
+        if (r && r.error === 'email_exists') {
+          showToast('用户名已存在', 'error');
+        } else {
+          showToast('注册失败，请重试', 'error');
+        }
         return;
       }
 
-      const result = await window.dataSdk.create({
+      // Save profile + initial dashboard snapshot
+      const now = new Date().toISOString();
+      await PandaBackend.saveProgress(r.userId, 'profile', {
         username,
-        password,
         displayName,
         avatar,
-        createdAt: new Date().toISOString(),
+        createdAt: now
+      });
+
+      await PandaBackend.saveProgress(r.userId, 'dashboard', {
+        username,
+        displayName,
+        avatar,
+        createdAt: now,
+        lastActive: now,
+        chapter1Complete: false,
+        chapter2Complete: false,
+        chapter3Complete: false,
+        chapter4Complete: false,
+        chapter5Complete: false,
+        chapter6Complete: false,
+        chapter4Code: ''
+      });
+
+      showToast('注册成功！请登录', 'success');
+      currentView = 'login';
+      render();
+    }
+
+        async function login(username, password) {
+      if (!username || !password) {
+        showToast('请输入用户名和密码', 'error');
+        return;
+      }
+
+      const r = await PandaBackend.login(username, password);
+      if (!r || !r.ok) {
+        if (r && (r.error === 'bad_password' || r.error === 'no_such_user')) {
+          showToast('用户名或密码错误', 'error');
+        } else {
+          showToast('登录失败，请重试', 'error');
+        }
+        return;
+      }
+
+      localStorage.setItem('currentUserId', r.userId);
+      localStorage.setItem('currentUsername', username);
+
+      const user = await hydrateUserFromBackend(r.userId);
+      currentUser = user || {
+        __backendId: r.userId,
+        username,
+        displayName: username,
+        avatar: '🐼',
         chapter1Complete: false,
         chapter2Complete: false,
         chapter3Complete: false,
@@ -1002,50 +1105,42 @@
         chapter6Complete: false,
         chapter4Code: '',
         lastActive: new Date().toISOString()
-      });
+      };
 
-      if (result.isOk) {
-        showToast('注册成功！请登录', 'success');
-        currentView = 'login';
-        render();
-      } else {
-        showToast('注册失败，请重试', 'error');
-      }
-    }
+      currentUser.lastActive = new Date().toISOString();
+      await saveDashboardSnapshot();
 
-    async function login(username, password) {
-      if (!username || !password) {
-        showToast('请输入用户名和密码', 'error');
-        return;
-      }
-
-      const user = allUsers.find(u => u.username === username && u.password === password);
-      if (user) {
-        currentUser = { ...user, lastActive: new Date().toISOString() };
-        await window.dataSdk.update(currentUser);
-        
-        localStorage.setItem('currentUserId', user.__backendId);
-        
-        currentView = 'dashboard';
-        showToast(`欢迎回来，${user.displayName}！`, 'success');
-        render();
-      } else {
-        showToast('用户名或密码错误', 'error');
-      }
+      currentView = 'dashboard';
+      showToast(`欢迎回来，${currentUser.displayName}！`, 'success');
+      render();
     }
 
     function logout() {
       localStorage.removeItem('currentUserId');
+      localStorage.removeItem('currentUsername');
       
       currentUser = null;
       currentView = 'login';
       render();
     }
 
-    async function completeChapter(chapterNum) {
+        async function completeChapter(chapterNum, extraPayload = {}) {
       const key = `chapter${chapterNum}Complete`;
-      currentUser = { ...currentUser, [key]: true, lastActive: new Date().toISOString() };
-      await window.dataSdk.update(currentUser);
+      const now = new Date().toISOString();
+
+      currentUser = { ...currentUser, [key]: true, lastActive: now };
+
+      // Save chapter completion + dashboard snapshot
+      if (currentUser && currentUser.__backendId) {
+        await PandaBackend.saveProgress(currentUser.__backendId, String(chapterNum), {
+          done: true,
+          completedAt: now,
+          ...extraPayload
+        });
+
+        await saveDashboardSnapshot();
+      }
+
       showConfetti();
       showToast(`第${chapterNum}章完成！获得印章✓`, 'success');
     }
@@ -1092,8 +1187,8 @@
           <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
             <div class="text-center mb-8">
               <div class="text-6xl mb-4">🐼🏛️</div>
-              <h1 class="text-3xl font-bold text-gray-800 mb-2">${window.elementSdk?.config?.site_title || defaultConfig.site_title}</h1>
-              <p class="text-lg text-gray-600">${window.elementSdk?.config?.site_subtitle || defaultConfig.site_subtitle}</p>
+              <h1 class="text-3xl font-bold text-gray-800 mb-2">${defaultConfig.site_title}</h1>
+              <p class="text-lg text-gray-600">${defaultConfig.site_subtitle}</p>
             </div>
             
             <div id="login-form">
@@ -1110,7 +1205,7 @@
                 注册新账号
               </button>
             </div>
-</div>
+          </div>
         </div>
       `;
     }
@@ -1147,8 +1242,6 @@
                 class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-purple-700 transition mb-3">
                 开始冒险
               </button>
-              <div class="flex gap-2">
-              <button onclick="setAdminAuthed(false); currentView='login'; render();" class="px-4 py-2 bg-white/90 rounded-lg shadow hover:shadow-lg transition font-bold">退出管理员</button>
               <button onclick="currentView='login'; render();" 
                 class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-bold text-lg hover:bg-gray-300 transition">
                 返回登录
@@ -1443,7 +1536,7 @@
             </div>
             
             <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-center">
-              <p class="text-sm text-gray-700">💡 提示：想想熊猫一天里大部分时间在做什么</p>
+              <p class="text-sm text-gray-700">💡 提示：想想熊猫��天��大部分时间在做什么</p>
             </div>
           </div>
         </div>
@@ -1524,7 +1617,7 @@
               ` : chapter2Foods.length > 0 ? `
                 <button onclick="chapter2Foods=[]; chapter2Health=0; chapter2Energy=0; render();" 
                   class="w-full mt-6 bg-gray-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-gray-700 transition">
-                  重新配餐
+                  重新���餐
                 </button>
               ` : ''}
             </div>
@@ -1657,7 +1750,7 @@
                     </div>
                   </div>
                   <p class="text-center text-xl font-bold text-amber-900 mt-4">
-                    密码收集完成！青铜宝盒已解锁！
+                    ���码收集完成！青铜宝盒已解锁！
                   </p>
                 </div>
                 
@@ -1678,7 +1771,7 @@
                   </div>
                 </div>
                 
-                <button onclick="completeChapter(4); currentUser.chapter4Code=chapter4Code.join(''); window.dataSdk.update(currentUser); currentView='dashboard'; chapter4Round=0; chapter4Code=[]; chapter4CurrentClue=null; chapter4CollectedKnowledge=[]; render();" 
+                <button onclick="completeChapter(4); currentUser.chapter4Code=chapter4Code.join(''); saveDashboardSnapshotLater(); currentView='dashboard'; chapter4Round=0; chapter4Code=[]; chapter4CurrentClue=null; chapter4CollectedKnowledge=[]; render();" 
                   class="w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition">
                   完成第4章 🎉
                 </button>
@@ -1833,14 +1926,14 @@
                       <p class="font-bold mb-2">📚 你学到了：</p>
                       <ul class="text-sm space-y-1 text-gray-700">
                         <li>✓ 大熊猫的生活习性和保护知识</li>
-                        <li>✓ 三星堆文明的神秘文物</li>
+                        <li>✓ 三星堆文明的神��文物</li>
                         <li>✓ 考古学家的工作方法</li>
                         <li>✓ 环境保护的重要性</li>
                       </ul>
                     </div>
                     
                     <div class="bg-green-50 rounded-lg p-4 text-left">
-                      <p class="font-bold mb-2">🎒 研学准备清单：</p>
+                      <p class="font-bold mb-2">🎒 研学准���清单：</p>
                       <ul class="text-sm space-y-1 text-gray-700">
                         <li>□ 舒适的运动鞋</li>
                         <li>□ 防晒帽和防晒霜</li>
@@ -1859,7 +1952,7 @@
               ` : `
                 <div class="text-center py-12">
                   <div class="text-6xl mb-4">🔒</div>
-                  <p class="text-xl text-gray-600 mb-4">请先完成前5个章节</p>
+                  <p class="text-xl text-gray-600 mb-4">请先完成前5个���节</p>
                   <p class="text-gray-500">已完成：${getCompletedCount() - (currentUser.chapter6Complete ? 1 : 0)}/5</p>
                 </div>
               `}
@@ -1869,130 +1962,133 @@
       `;
     }
 
-
-    function renderAdminGate() {
+    function renderAdminAuth() {
       return `
         <div class="gradient-bg min-h-full w-full flex items-center justify-center p-4">
           <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
             <div class="text-center mb-6">
-              <div class="text-6xl mb-3">🔒</div>
-              <h2 class="text-2xl font-bold text-gray-800 mb-2">管理员登录</h2>
-              <p class="text-sm text-gray-500">提示：这是静态站的基础保护，密码不要用常用密码。</p>
+              <div class="text-5xl mb-3">🔒</div>
+              <h2 class="text-2xl font-bold text-gray-800">管理员登录</h2>
+              <p class="text-gray-600 mt-2">仅限管理员使用（学生无需进入）</p>
             </div>
+
             <div class="space-y-3">
-              <input id="admin-username" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:border-purple-500 focus:outline-none" placeholder="管理员账号" value="admin"/>
-              <input id="admin-password" type="password" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:border-purple-500 focus:outline-none" placeholder="管理员密码"/>
+              <input type="text" id="admin-user" placeholder="管理员账号"
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:border-purple-500 focus:outline-none">
+              <input type="password" id="admin-pass" placeholder="管理员密码"
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:border-purple-500 focus:outline-none">
               <button onclick="handleAdminLogin()"
                 class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-purple-700 transition">
-                登录管理员平台
+                登录
               </button>
-              <button onclick="currentView='login'; render();"
+              <button onclick="location.hash=''; currentView='login'; render();"
                 class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-bold text-lg hover:bg-gray-300 transition">
                 返回学生登录
               </button>
+            </div>
+
+            <div class="mt-6 text-sm text-gray-500">
+              提示：管理员入口是网址后加 <span class="font-mono">#admin</span>。
             </div>
           </div>
         </div>
       `;
     }
 
-    function renderAdmin() {
-      const sortedUsers = [...allUsers].sort((a, b) => 
-        new Date(b.lastActive) - new Date(a.lastActive)
-      );
-      
+    function _adminCompletedCountFromItems(items) {
+      const by = new Map((items||[]).map(it => [String(it.chapter), _parseJson(it.payloadJson)]));
+      let c = 0;
+      for (let i=1;i<=6;i++) {
+        const p = by.get(String(i)) || {};
+        if (p.done) c++;
+        else {
+          const dash = by.get('dashboard') || {};
+          if (dash[`chapter${i}Complete`]) c++;
+        }
+      }
+      return c;
+    }
+
+    function renderAdminPanel() {
       return `
         <div class="gradient-bg min-h-full w-full p-4">
           <div class="max-w-6xl mx-auto">
-            <button onclick="currentView='login'; render();" 
-              class="mb-4 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">
-              ← 返回登录
-            </button>
-            
-            <div class="bg-white rounded-2xl shadow-xl p-6">
-              <div class="text-center mb-6">
-                <div class="text-5xl mb-3">🛠️</div>
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">管理员平台</h2>
-                <p class="text-gray-600">查看所有账号的学习进度（本浏览器数据）</p>
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-white">
+                <div class="text-2xl font-bold">🧑‍💼 管理员后台</div>
+                <div class="text-sm opacity-90">查看学生账号与学习进度</div>
               </div>
-              
-              <div class="mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div class="bg-blue-50 rounded-lg p-4 text-center">
-                    <div class="text-3xl font-bold text-blue-600">${allUsers.length}</div>
-                    <div class="text-sm text-gray-600">注册学生</div>
-                  </div>
-                  <div class="bg-green-50 rounded-lg p-4 text-center">
-                    <div class="text-3xl font-bold text-green-600">
-                      ${allUsers.filter(u => getCompletedCountForUser(u) === 6).length}
-                    </div>
-                    <div class="text-sm text-gray-600">完成全部任务</div>
-                  </div>
-                  <div class="bg-purple-50 rounded-lg p-4 text-center">
-                    <div class="text-3xl font-bold text-purple-600">
-                      ${allUsers.filter(u => getCompletedCountForUser(u) > 0).length}
-                    </div>
-                    <div class="text-sm text-gray-600">已开始学习</div>
-                  </div>
-                </div>
+              <div class="flex gap-2">
+                <button onclick="adminRefreshUsers()"
+                  class="px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">刷新</button>
+                <button onclick="adminLogout()"
+                  class="px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">退出</button>
               </div>
-              
-              <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead class="bg-gray-100">
-                    <tr>
-                      <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">学生</th>
-                      <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">进度</th>
-                      <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">章节完成</th>
-                      <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">最后活跃</th>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="bg-white rounded-2xl shadow-xl p-4 overflow-x-auto">
+                <div class="font-bold text-lg mb-3">用户列表（${'${adminUsersCache.length}'}）</div>
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="border-b">
+                      <th class="py-2 pr-2">账号</th>
+                      <th class="py-2 pr-2">创建时间</th>
+                      <th class="py-2">操作</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-200">
-                    ${sortedUsers.map(user => {
-                      const completed = getCompletedCountForUser(user);
-                      const progress = (completed / 6) * 100;
-                      return `
-                        <tr class="hover:bg-gray-50">
-                          <td class="px-4 py-3">
-                            <div class="flex items-center gap-2">
-                              <span class="text-2xl">${user.avatar}</span>
-                              <div>
-                                <div class="font-medium text-gray-800">${user.displayName}</div>
-                                <div class="text-xs text-gray-500">${user.username}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td class="px-4 py-3">
-                            <div class="flex items-center gap-2">
-                              <div class="flex-1 bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full" style="width: ${progress}%"></div>
-                              </div>
-                              <span class="text-sm font-medium text-gray-700">${completed}/6</span>
-                            </div>
-                          </td>
-                          <td class="px-4 py-3">
-                            <div class="flex justify-center gap-1">
-                              ${[1,2,3,4,5,6].map(i => `
-                                <span class="text-lg">${user[`chapter${i}Complete`] ? '✅' : '⭕'}</span>
-                              `).join('')}
-                            </div>
-                          </td>
-                          <td class="px-4 py-3 text-sm text-gray-600">
-                            ${new Date(user.lastActive).toLocaleString('zh-CN')}
-                          </td>
-                        </tr>
-                      `;
-                    }).join('')}
+                  <tbody>
+                    ${'${adminUsersCache.map(u => `'}
+                      <tr class="border-b">
+                        <td class="py-2 pr-2 font-mono text-sm">${'${u.email}'}</td>
+                        <td class="py-2 pr-2 text-sm text-gray-600">${'${u.createdAt || ""}'}</td>
+                        <td class="py-2">
+                          <button onclick="adminSelectUser('${'${u.userId}'}')"
+                            class="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 transition">
+                            查看
+                          </button>
+                        </td>
+                      </tr>
+                    ${'`).join("")}'}
                   </tbody>
                 </table>
               </div>
-              
-              ${allUsers.length === 0 ? `
-                <div class="text-center py-12 text-gray-500">
-                  <div class="text-5xl mb-4">📋</div>
-                  <p>还没有学生注册</p>
-                </div>
-              ` : ''}
+
+              <div class="bg-white rounded-2xl shadow-xl p-4">
+                <div class="font-bold text-lg mb-3">用户进度</div>
+                ${'${adminSelectedUserId ? `'}
+                  <div class="mb-3">
+                    <div class="text-sm text-gray-600">用户ID：</div>
+                    <div class="font-mono text-sm break-all">${'${adminSelectedUserId}'}</div>
+                  </div>
+
+                  <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-xl font-bold mb-2">
+                      已完成章节：${'${_adminCompletedCountFromItems(adminSelectedUserProgress)}'}/6
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 mt-3">
+                      ${'${[1,2,3,4,5,6].map(i => {'}
+                        const by = new Map((adminSelectedUserProgress||[]).map(it => [String(it.chapter), _parseJson(it.payloadJson)]));
+                        const p = by.get(String(i)) || {};
+                        const dash = by.get('dashboard') || {};
+                        const done = !!(p.done || dash[`chapter${'${i}'}Complete`]);
+                        return `
+                          <div class="text-center rounded-lg p-2 ${'${done ? "bg-green-100" : "bg-white border"}'}">
+                            <div class="text-2xl">${'${done ? "✅" : "⭕"}'}</div>
+                            <div class="text-sm">第${'${i}'}章</div>
+                          </div>
+                        `;
+                      ${'}) .join("")}'}
+                    </div>
+
+                    <details class="mt-4">
+                      <summary class="cursor-pointer text-sm text-gray-600">查看原始数据</summary>
+                      <pre class="text-xs bg-white border rounded p-2 mt-2 overflow-auto">${'${JSON.stringify(adminSelectedUserProgress, null, 2)}'}</pre>
+                    </details>
+                  </div>
+                ${'` : `<div class="text-gray-500">选择左侧用户查看进度</div>`}'}
+              </div>
             </div>
           </div>
         </div>
@@ -2020,7 +2116,8 @@
       else if (currentView === 'chapter4') html = renderChapter4();
       else if (currentView === 'chapter5') html = renderChapter5();
       else if (currentView === 'chapter6') html = renderChapter6();
-      else if (currentView === 'admin') html = (isAdminAuthed() ? renderAdmin() : renderAdminGate());
+      else if (currentView === 'adminAuth') html = renderAdminAuth();
+      else if (currentView === 'adminPanel') html = renderAdminPanel();
       
       app.innerHTML = html;
       
@@ -2052,7 +2149,63 @@
       register(username, password, displayName, avatar);
     };
 
-    window.selectAvatar = function(avatar) {
+    
+    // ===== Admin handlers (hidden entry: #admin) =====
+    window.handleAdminLogin = async function() {
+      const adminUser = document.getElementById('admin-user').value.trim();
+      const adminPass = document.getElementById('admin-pass').value;
+      if (!adminUser || !adminPass) {
+        showToast('请输入管理员账号和密码', 'error');
+        return;
+      }
+      const r = await PandaBackend.adminListUsers(adminUser, adminPass);
+      if (!r || !r.ok) {
+        showToast('管理员账号或密码错误', 'error');
+        return;
+      }
+      adminSession = { adminUser, adminPass };
+      adminUsersCache = r.users || [];
+      adminSelectedUserId = null;
+      adminSelectedUserProgress = [];
+      currentView = 'adminPanel';
+      showToast('管理员登录成功', 'success');
+      render();
+    };
+
+    window.adminRefreshUsers = async function() {
+      if (!adminSession) return;
+      const r = await PandaBackend.adminListUsers(adminSession.adminUser, adminSession.adminPass);
+      if (r && r.ok) {
+        adminUsersCache = r.users || [];
+        render();
+      } else {
+        showToast('刷新失败，请重新登录', 'error');
+      }
+    };
+
+    window.adminSelectUser = async function(userId) {
+      if (!adminSession) return;
+      adminSelectedUserId = userId;
+      const r = await PandaBackend.adminGetUserProgress(adminSession.adminUser, adminSession.adminPass, userId);
+      if (r && r.ok) {
+        adminSelectedUserProgress = r.items || [];
+        render();
+      } else {
+        showToast('读取用户进度失败', 'error');
+      }
+    };
+
+    window.adminLogout = function() {
+      adminSession = null;
+      adminUsersCache = [];
+      adminSelectedUserId = null;
+      adminSelectedUserProgress = [];
+      location.hash = '';
+      currentView = 'login';
+      render();
+    };
+
+window.selectAvatar = function(avatar) {
       document.querySelectorAll('.avatar-option').forEach(el => {
         el.classList.remove('selected');
       });
@@ -2430,7 +2583,7 @@
             
             render();
           } else {
-            showToast('分类错误！这个物品不属于这个类别', 'error');
+            showToast('分类错误！这个���品不属于这个类别', 'error');
             if (source === 'placed') {
               render();
             }
@@ -2458,38 +2611,6 @@
         ['mission_description', config.mission_description || defaultConfig.mission_description]
       ]);
     }
-
-    if (window.elementSdk) {
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange,
-        mapToCapabilities: () => capabilities,
-        mapToEditPanelValues
-      });
-    }
-    window.handleAdminLogin = async function() {
-      const u = document.getElementById('admin-username')?.value?.trim();
-      const p = document.getElementById('admin-password')?.value || '';
-      if (u !== ADMIN_USERNAME) { showToast('管理员账号错误', 'error'); return; }
-      const ph = await sha256(p);
-      if (ph !== ADMIN_PASSWORD_SHA256) { showToast('管理员密码错误', 'error'); return; }
-      setAdminAuthed(true);
-      showToast('管理员登录成功', 'success');
-      currentView = 'admin';
-      render();
-    };
-
-    // URL hash 路由：#admin 直接进入管理员登录（不在学生界面露出入口）
-    function applyHashRoute() {
-      const h = (location.hash || '').replace('#', '').replace('/', '').trim().toLowerCase();
-      if (h === 'admin') {
-        currentView = 'admin';
-      }
-    }
-    window.addEventListener('hashchange', () => { applyHashRoute(); render(); });
-
-
-    applyHashRoute();
     init();
   </script>
 </body>
