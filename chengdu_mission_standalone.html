@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="zh-CN" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chengdu Discovery Mission | 成都研学预习任务站</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Standalone mode: lightweight SDK stubs (localStorage) -->
+<script>
+  // This file was adapted to run as a standalone web page (no Canva runtime required).
+  // Data is stored locally in the browser (per-device). For multi-device/classroom sync, use a real backend later.
+
+  (function () {
+    const STORAGE_KEY = "chengdu_mission_records_v1";
+
+    function safeLoad() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const data = raw ? JSON.parse(raw) : [];
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.warn("Failed to load local data:", e);
+        return [];
+      }
+    }
+
+    function safeSave(data) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.warn("Failed to save local data:", e);
+      }
+    }
+
+    function makeId() {
+      return "rec_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10);
+    }
+
+    let handler = null;
+    let records = safeLoad();
+
+    // Minimal dataSdk compatible with the code below
+    window.dataSdk = {
+      async init(h) {
+        handler = h || null;
+        // Immediately send current data to the app
+        if (handler && typeof handler.onDataChanged === "function") {
+          handler.onDataChanged(records);
+        }
+        return { isOk: true };
+      },
+      async create(record) {
+        const rec = { _id: makeId(), ...record };
+        records = [...records, rec];
+        safeSave(records);
+        if (handler && typeof handler.onDataChanged === "function") {
+          handler.onDataChanged(records);
+        }
+        return { isOk: true, record: rec };
+      },
+      async update(record) {
+        if (!record) return { isOk: false, error: "No record provided" };
+        const idx = records.findIndex(r => r._id && record._id && r._id === record._id);
+        let next = records.slice();
+
+        if (idx >= 0) {
+          next[idx] = { ...records[idx], ...record };
+        } else {
+          // Fallback matching if _id missing
+          const idx2 = records.findIndex(r =>
+            r.record_type === record.record_type &&
+            r.user_id === record.user_id &&
+            (
+              (record.record_type === "user" && r.user_id === record.user_id) ||
+              (record.task_id && r.task_id === record.task_id) ||
+              (record.question_id && r.question_id === record.question_id)
+            )
+          );
+          if (idx2 >= 0) {
+            next[idx2] = { ...records[idx2], ...record };
+          } else {
+            // If not found, create it
+            next.push({ _id: makeId(), ...record });
+          }
+        }
+
+        records = next;
+        safeSave(records);
+        if (handler && typeof handler.onDataChanged === "function") {
+          handler.onDataChanged(records);
+        }
+        return { isOk: true };
+      }
+    };
+
+    // Minimal elementSdk stub (keeps your customization panel logic harmless outside Canva)
+    window.elementSdk = {
+      config: {},
+      _onConfigChange: null,
+      init({ defaultConfig, onConfigChange }) {
+        this.config = { ...(defaultConfig || {}) };
+        this._onConfigChange = (typeof onConfigChange === "function") ? onConfigChange : null;
+        if (this._onConfigChange) this._onConfigChange(this.config);
+      },
+      setConfig(partial) {
+        this.config = { ...this.config, ...(partial || {}) };
+        if (this._onConfigChange) this._onConfigChange(this.config);
+      }
+    };
+        if (typeof onConfigChange === "function") onConfigChange(this.config);
+      },
+      setConfig(partial) {
+        this.config = { ...this.config, ...(partial || {}) };
+      }
+    };
+  })();
+</script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+    
+    body {
+      box-sizing: border-box;
+      font-family: 'Fredoka', 'Noto Sans SC', sans-serif;
+    }
+    
+    .badge-glow {
+      animation: glow 2s ease-in-out infinite;
+    }
+    
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+      50% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.8); }
+    }
+    
+    .task-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .task-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+    
+    .quiz-option {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .quiz-option:hover {
+      transform: scale(1.02);
+    }
+    
+    .quiz-option.correct {
+      animation: correctPulse 0.6s ease;
+    }
+    
+    .quiz-option.wrong {
+      animation: wrongShake 0.5s ease;
+    }
+    
+    @keyframes correctPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes wrongShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
+    .progress-bar {
+      transition: width 0.8s ease;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .admin-table th {
+      text-align: left;
+      padding: 12px;
+      font-weight: 600;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .admin-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .admin-table tr:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-not-started {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-in-progress {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-completed {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full w-full">
+  <div id="app" class="h-full w-full overflow-auto"></div>
+  <script>
+    const defaultConfig = {
+      site_title: "Chengdu Discovery Mission",
+      site_subtitle: "成都研学预习任务站",
+      main_heading: "出发前，先完成 6 个任务！",
+      panda_card_title: "熊猫任务线",
+      sanxingdui_card_title: "三星堆任务线",
+      background_color: "#fef3c7",
+      surface_color: "#ffffff",
+      text_color: "#1f2937",
+      primary_action_color: "#f59e0b",
+      secondary_action_color: "#10b981",
+      font_family: "Fredoka",
+      font_size: 16
+    };
+
+    let currentPage = 'auth';
+    let currentUser = null;
+    let quizAnswers = {};
+    let pandaBodyParts = {};
+    let conservationChecklist = [];
+    let artifactMatches = {};
+    let archaeologyClues = {};
+    let userArtifact = '';
+    let completedTasks = new Set();
+    let earnedBadges = new Set();
+    let wrongAnswers = [];
+    let allData = [];
+    let isLoading = false;
+    let adminDashboardTab = 'overview';
+    let searchQuery = '';
+    let filterStatus = 'all';
+    let selectedUserId = null;
+    let selectedArtifact = null;
+
+    const ADMIN_EMAIL = 'admin@chengdu.com';
+    const ADMIN_PASSWORD = 'admin123';
+
+    const dataHandler = {
+      onDataChanged(data) {
+        allData = data;
+        
+        if (currentUser) {
+          updateLastActive();
+          loadUserProgress();
+        }
+
+        if (currentPage.startsWith('admin-')) {
+          renderAdminDashboard();
+        }
+      }
+    };
+
+    async function updateLastActive() {
+      if (!currentUser) return;
+
+      const userRecord = allData.find(r => 
+        r.record_type === 'user' && 
+        r.user_id === currentUser.id
+      );
+
+      if (userRecord) {
+        const updated = { 
+          ...userRecord, 
+          last_active: new Date().toISOString()
+        };
+        await window.dataSdk.update(updated);
+      }
+    }
+
+    function loadUserProgress() {
+      completedTasks.clear();
+      earnedBadges.clear();
+      wrongAnswers = [];
+      
+      const userRecords = allData.filter(r => r.user_id === currentUser.id);
+      
+      userRecords.forEach(record => {
+        if (record.record_type === 'task' && record.completed) {
+          completedTasks.add(record.task_id);
+        } else if (record.record_type === 'badge') {
+          earnedBadges.add(record.task_id);
+        } else if (record.record_type === 'wrong_answer') {
+          wrongAnswers.push({
+            question_id: record.question_id,
+            timestamp: record.timestamp
+          });
+        }
+      });
+      
+      updateProgressBar();
+      if (currentPage === 'home') {
+        renderHomePage();
+      }
+    }
+
+    async function saveTaskCompletion(taskId, userInput = '') {
+      if (!currentUser) {
+        showLoginPrompt();
+        return;
+      }
+
+      if (allData.length >= 999) {
+        showToast('数据已达上限，无法保存新任务', 'error');
+        return;
+      }
+
+      const existingRecord = allData.find(r => 
+        r.user_id === currentUser.id && 
+        r.record_type === 'task' && 
+        r.task_id === taskId
+      );
+      
+      if (existingRecord) {
+        const updated = { 
+          ...existingRecord, 
+          completed: true, 
+          timestamp: new Date().toISOString(), 
+          user_input: userInput 
+        };
+        const result = await window.dataSdk.update(updated);
+        if (!result.isOk) {
+          showToast('保存失败，请重试', 'error');
+        }
+      } else {
+        const result = await window.dataSdk.create({
+          record_type: 'task',
+          user_id: currentUser.id,
+          task_id: taskId,
+          completed: true,
+          timestamp: new Date().toISOString(),
+          user_input: userInput,
+          nickname: '',
+          email: '',
+          password: '',
+          school: '',
+          class_name: '',
+          parent_email: '',
+          class_code: '',
+          is_teacher: false,
+          is_admin: false,
+          score: 0,
+          question_id: '',
+          is_correct: false,
+          last_active: ''
+        });
+        if (!result.isOk) {
+          showToast('保存失败，请重试', 'error');
+        }
+      }
+    }
+
+    async function saveBadge(badgeId) {
+      if (!currentUser || allData.length >= 999) return;
+
+      const existingBadge = allData.find(r => 
+        r.user_id === currentUser.id && 
+        r.record_type === 'badge' && 
+        r.task_id === badgeId
+      );
+
+      if (!existingBadge) {
+        await window.dataSdk.create({
+          record_type: 'badge',
+          user_id: currentUser.id,
+          task_id: badgeId,
+          completed: true,
+          timestamp: new Date().toISOString(),
+          user_input: '',
+          nickname: '',
+          email: '',
+          password: '',
+          school: '',
+          class_name: '',
+          parent_email: '',
+          class_code: '',
+          is_teacher: false,
+          is_admin: false,
+          score: 0,
+          question_id: '',
+          is_correct: false,
+          last_active: ''
+        });
+      }
+    }
+
+    async function saveWrongAnswer(questionId) {
+      if (!currentUser || allData.length >= 999) return;
+
+      await window.dataSdk.create({
+        record_type: 'wrong_answer',
+        user_id: currentUser.id,
+        task_id: '',
+        completed: false,
+        timestamp: new Date().toISOString(),
+        user_input: '',
+        nickname: '',
+        email: '',
+        password: '',
+        school: '',
+        class_name: '',
+        parent_email: '',
+        class_code: '',
+        is_teacher: false,
+        is_admin: false,
+        score: 0,
+        question_id: questionId,
+        is_correct: false,
+        last_active: ''
+      });
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full text-white font-medium z-50 fade-in ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+
+    function showLoginPrompt() {
+      const config = window.elementSdk.config;
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay fixed inset-0 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="surface rounded-3xl p-8 max-w-md mx-4 shadow-2xl" style="background-color: ${config.surface_color || defaultConfig.surface_color};">
+          <div class="text-center mb-6">
+            <div class="text-5xl mb-4">🔒</div>
+            <h3 class="text-content text-2xl font-bold mb-2" style="color: ${config.text_color || defaultConfig.text_color};">需要登录</h3>
+            <p class="text-content opacity-80" style="color: ${config.text_color || defaultConfig.text_color};">保存进度和完成任务需要先登录账号</p>
+          </div>
+          <button onclick="this.closest('.modal-overlay').remove(); navigateTo('auth');" class="btn-primary w-full py-3 rounded-full font-bold text-white mb-3" style="background-color: ${config.primary_action_color || defaultConfig.primary_action_color};">前往登录</button>
+          <button onclick="this.closest('.modal-overlay').remove();" class="btn-secondary w-full py-3 rounded-full font-bold text-white" style="background-color: ${config.secondary_action_color || defaultConfig.secondary_action_color};">稍后再说</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function updateProgressBar() {
+      const totalTasks = 6;
+      const completed = completedTasks.size;
+      const percentage = Math.round((completed / totalTasks) * 100);
+      
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      
+      if (progressBar) {
+        progressBar.style.width = percentage + '%';
+      }
+      if (progressText) {
+        progressText.textContent = `${percentage}%`;
+      }
+    }
+
+    async function onConfigChange(config) {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const baseFontStack = "'Noto Sans SC', sans-serif";
+      
+      document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.body.style.backgroundColor = config.background_color || defaultConfig.background_color;
+      
+      const app = document.getElementById('app');
+      if (app) {
+        app.style.backgroundColor = config.background_color || defaultConfig.background_color;
+      }
+      
+      document.documentElement.style.setProperty('--base-font-size', baseSize + 'px');
+      
+      const titles = document.querySelectorAll('.site-title');
+      titles.forEach(el => {
+        el.textContent = config.site_title || defaultConfig.site_title;
+        el.style.fontSize = (baseSize * 1.5) + 'px';
+        el.style.color = config.text_color || defaultConfig.text_color;
+      });
+      
+      const subtitles = document.querySelectorAll('.site-subtitle');
+      subtitles.forEach(el => {
+        el.textContent = config.site_subtitle || defaultConfig.site_subtitle;
+        el.style.fontSize = (baseSize * 0.9) + 'px';
+        el.style.color = config.text_color || defaultConfig.text_color;
+      });
+      
+      const mainHeadings = document.querySelectorAll('.main-heading');
+      mainHeadings.forEach(el => {
+        el.textContent = config.main_heading || defaultConfig.main_heading;
+        el.style.fontSize = (baseSize * 1.75) + 'px';
+        el.style.color = config.text_color || defaultConfig.text_color;
+      });
+      
+      const pandaCards = document.querySelectorAll('.panda-card-title');
+      pandaCards.forEach(el => {
+        el.textContent = config.panda_card_title || defaultConfig.panda_card_title;
+        el.style.fontSize = (baseSize * 1.25) + 'px';
+        el.style.color = config.text_color || defaultConfig.text_color;
+      });
+      
+      const sanxingduiCards = document.querySelectorAll('.sanxingdui-card-title');
+      sanxingduiCards.forEach(el => {
+        el.textContent = config.sanxingdui_card_title || defaultConfig.sanxingdui_card_title;
+        el.style.fontSize = (baseSize * 1.25) + 'px';
+        el.style.color = config.text_color || defaultConfig.text_color;
+      });
+      
+      const surfaces = document.querySelectorAll('.surface');
+      surfaces.forEach(el => {
+        el.style.backgroundColor = config.surface_color || defaultConfig.surface_color;
+      });
+      
+      const textElements = document.querySelectorAll('.text-content');
+      textElements.forEach(el => {
+        el.style.color = config.text_color || defaultConfig.text_color;
+        el.style.fontSize = baseSize + 'px';
+      });
+      
+      const primaryButtons = document.querySelectorAll('.btn-primary');
+      primaryButtons.forEach(el => {
+        el.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color;
+        el.style.fontSize = (baseSize * 1.1) + 'px';
+      });
+      
+      const secondaryButtons = document.querySelectorAll('.btn-secondary');
+      secondaryButtons.forEach(el => {
+        el.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+        el.style.fontSize = baseSize + 'px';
+      });
+    }
+
+    function renderAuthPage() {
+      const config = window.elementSdk.config;
+      const app = document.getElementById('app');
+      
+      app.innerHTML = `
+        <div class="min-h-full w-full surface flex items-center justify-center" style="background-color: ${config.background_color || defaultConfig.background_color}; padding: 20px;">
+          <div class="max-w-md w-full">
+            <div class="text-center mb-8">
+              <h1 class="site-title text-4xl font-bold mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px;">${config.site_title || defaultConfig.site_title}</h1>
+              <p class="site-subtitle text-lg opacity-80" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 0.9}px;">${config.site_subtitle || defaultConfig.site_subtitle}</p>
+            </div>
+
+            <div class="surface rounded-3xl p-8 shadow-lg" style="background-color: ${config.surface_color || defaultConfig.surface_color};">
+              <div class="text-center mb-6">
+                <div class="text-5xl mb-4">👋</div>
+                <h2 class="text-content text-2xl font-bold mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px;">欢迎来到成都研学</h2>
+                <p class="text-content opacity-80" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">请先登录或注册账号</p>
+              </div>
+
+              <div class="mb-6">
+                <div class="flex gap-2 mb-6">
+                  <button id="login-tab" onclick="switchAuthTab('login')" class="flex-1 py-3 rounded-full font-bold transition-all" style="background-color: ${config.primary_action_color || defaultConfig.primary_action_color}; color: white;">登录</button>
+                  <button id="register-tab" onclick="switchAuthTab('register')" class="flex-1 py-3 rounded-full font-bold transition-all" style="background-color: #e5e7eb; color: #6b7280;">注册</button>
+                </div>
+
+                <form id="auth-form" onsubmit="handleAuth(event)">
+                  <div id="login-form">
+                    <div class="mb-4">
+                      <label for="login-email" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">邮箱</label>
+                      <input type="email" id="login-email" required class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="your@email.com">
+                    </div>
+                    <div class="mb-6">
+                      <label for="login-password" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">密码</label>
+                      <input type="password" id="login-password" required class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="输入密码">
+                    </div>
+                  </div>
+
+                  <div id="register-form" class="hidden">
+                    <div class="mb-4">
+                      <label for="register-nickname" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">昵称/姓名 *</label>
+                      <input type="text" id="register-nickname" class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="你的昵称">
+                    </div>
+                    <div class="mb-4">
+                      <label for="register-email" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">邮箱 *</label>
+                      <input type="email" id="register-email" class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="your@email.com">
+                    </div>
+                    <div class="mb-4">
+                      <label for="register-password" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">密码 *</label>
+                      <input type="password" id="register-password" class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="设置密码（至少6位）">
+                    </div>
+                    <div class="mb-4">
+                      <label for="register-school" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">学校（可选）</label>
+                      <input type="text" id="register-school" class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="你的学校">
+                    </div>
+                    <div class="mb-4">
+                      <label for="register-class" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">班级（可选）</label>
+                      <input type="text" id="register-class" class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="例如：三年级2班">
+                    </div>
+                    <div class="mb-4">
+                      <label for="register-parent-email" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">家长邮箱（可选）</label>
+                      <input type="email" id="register-parent-email" class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="parent@email.com">
+                    </div>
+                    <div class="mb-6">
+                      <label for="register-class-code" class="block text-content font-medium mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">班级码（可选）</label>
+                      <input type="text" id="register-class-code" class="w-full p-3 rounded-xl border-2 border-gray-200" style="background-color: ${config.surface_color || defaultConfig.surface_color}; color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;" placeholder="老师提供的班级码">
+                    </div>
+                  </div>
+
+                  <button type="submit" id="auth-submit-btn" class="btn-primary w-full py-3 rounded-full font-bold text-white" style="background-color: ${config.primary_action_color || defaultConfig.primary_action_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.1}px;">登录</button>
+                </form>
+              </div>
+
+              <div class="text-center space-y-2">
+                <button onclick="createTeacherAccount()" class="text-content underline opacity-80 block w-full" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 0.9}px;">我是老师，创建班级</button>
+                <button onclick="navigateTo('admin-login')" class="text-content underline opacity-80 block w-full" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 0.9}px;">🔐 管理员登录</button>
+              </div>
+            </div>
+
+            <div class="mt-6 p-4 rounded-2xl" style="background-color: rgba(255, 255, 255, 0.5);">
+              <p class="text-content text-sm text-center opacity-80" style="color: ${config.text_color || defaultConfig.text_color};">🔒 隐私保护：我们仅收集必要的学习进度数据，用于教学管理。您的数据安全存储，不会与他人共享。</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function switchAuthTab(tab) {
+      const config = window.elementSdk.config;
+      const loginTab = document.getElementById('login-tab');
+      const registerTab = document.getElementById('register-tab');
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      const submitBtn = document.getElementById('auth-submit-btn');
+
+      if (tab === 'login') {
+        loginTab.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color;
+        loginTab.style.color = 'white';
+        registerTab.style.backgroundColor = '#e5e7eb';
+        registerTab.style.color = '#6b7280';
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        submitBtn.textContent = '登录';
+      } else {
+        registerTab.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color;
+        registerTab.style.color = 'white';
+        loginTab.style.backgroundColor = '#e5e7eb';
+        loginTab.style.color = '#6b7280';
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        submitBtn.textContent = '注册';
+      }
+    }
+
+    async function handleAuth(event) {
+      event.preventDefault();
+      
+      if (isLoading) return;
+      isLoading = true;
+
+      const submitBtn = document.getElementById('auth-submit-btn');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = '处理中...';
+
+      const loginForm = document.getElementById('login-form');
+      const isLogin = !loginForm.classList.contains('hidden');
+
+      try {
+        if (isLogin) {
+          const email = document.getElementById('login-email').value.trim();
+          const password = document.getElementById('login-password').value;
+
+          if (!email || !password) {
+            showToast('请填写完整信息', 'error');
+            return;
+          }
+
+          const userRecord = allData.find(r => 
+            r.record_type === 'user' && 
+            r.email === email && 
+            r.password === password
+          );
+
+          if (userRecord) {
+            currentUser = {
+              id: userRecord.user_id,
+              nickname: userRecord.nickname,
+              email: userRecord.email,
+              school: userRecord.school,
+              class_name: userRecord.class_name,
+              is_teacher: userRecord.is_teacher,
+              is_admin: userRecord.is_admin || false
+            };
+            showToast('登录成功！', 'success');
+            loadUserProgress();
+            navigateTo('home');
+          } else {
+            showToast('邮箱或密码错误', 'error');
+          }
+        } else {
+          const nickname = document.getElementById('register-nickname').value.trim();
+          const email = document.getElementById('register-email').value.trim();
+          const password = document.getElementById('register-password').value;
+          const school = document.getElementById('register-school').value.trim();
+          const className = document.getElementById('register-class').value.trim();
+          const parentEmail = document.getElementById('register-parent-email').value.trim();
+          const classCode = document.getElementById('register-class-code').value.trim();
+
+          if (!nickname || !email || !password) {
+            showToast('请填写必填项（昵称、邮箱、密码）', 'error');
+            return;
+          }
+
+          if (password.length < 6) {
+            showToast('密码至少需要6位', 'error');
+            return;
+          }
+
+          const existingUser = allData.find(r => 
+            r.record_type === 'user' && 
+            r.email === email
+          );
+
+          if (existingUser) {
+            showToast('该邮箱已被注册', 'error');
+            return;
+          }
+
+          if (allData.length >= 999) {
+            showToast('系统用户已达上限', 'error');
+            return;
+          }
+
+          const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+          const result = await window.dataSdk.create({
+            record_type: 'user',
+            user_id: userId,
+            task_id: '',
+            completed: false,
+            timestamp: new Date().toISOString(),
+            user_input: '',
+            nickname: nickname,
+            email: email,
+            password: password,
+            school: school,
+            class_name: className,
+            parent_email: parentEmail,
+            class_code: classCode,
+            is_teacher: false,
+            is_admin: false,
+            score: 0,
+            question_id: '',
+            is_correct: false,
+            last_active: new Date().toISOString()
+          });
+
+          if (result.isOk) {
+            currentUser = {
+              id: userId,
+              nickname: nickname,
+              email: email,
+              school: school,
+              class_name: className,
+              is_teacher: false,
+              is_admin: false
+            };
+            showToast('注册成功！', 'success');
+            loadUserProgress();
+            navigateTo('home');
+          } else {
+            showToast('注册失败，请重试', 'error');
+          }
+        }
+      } finally {
+        isLoading = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    }
+
+    function renderHomePage() {
+      const config = window.elementSdk.config;
+      const app = document.getElementById('app');
+      
+      app.innerHTML = `
+        <div class="min-h-full w-full surface" style="background-color: ${config.background_color || defaultConfig.background_color}; padding: 20px;">
+          <div class="max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+              <div>
+                <h1 class="site-title text-4xl font-bold mb-2" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.5}px;">${config.site_title || defaultConfig.site_title}</h1>
+                <p class="site-subtitle text-lg opacity-80" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 0.9}px;">${config.site_subtitle || defaultConfig.site_subtitle}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-content font-bold mb-1" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.1}px;">👋 ${currentUser.nickname}</p>
+                ${currentUser.school ? `<p class="text-content text-sm opacity-80 mb-2" style="color: ${config.text_color || defaultConfig.text_color};">${currentUser.school}</p>` : ''}
+                <button onclick="logout()" class="text-content text-sm underline opacity-80" style="color: ${config.text_color || defaultConfig.text_color};">退出登录</button>
+              </div>
+            </div>
+
+            <div class="surface rounded-3xl p-6 mb-6 shadow-lg" style="background-color: ${config.surface_color || defaultConfig.surface_color};">
+              <h2 class="main-heading text-2xl font-bold mb-4 text-center" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.75}px;">${config.main_heading || defaultConfig.main_heading}</h2>
+              
+              <div class="mb-4">
+                <div class="flex justify-between mb-2">
+                  <span class="text-content font-medium" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">学习进度</span>
+                  <span id="progress-text" class="text-content font-bold" style="color: ${config.primary_action_color || defaultConfig.primary_action_color}; font-size: ${config.font_size || defaultConfig.font_size}px;">0%</span>
+                </div>
+                <div class="w-full h-4 rounded-full" style="background-color: rgba(0,0,0,0.1);">
+                  <div id="progress-bar" class="progress-bar h-full rounded-full" style="width: 0%; background-color: ${config.primary_action_color || defaultConfig.primary_action_color};"></div>
+                </div>
+              </div>
+
+              <div class="mt-6">
+                <h3 class="text-content font-semibold mb-3" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.1}px;">🏆 已解锁徽章</h3>
+                <div class="flex flex-wrap gap-3">
+                  ${['panda-expert', 'conservation-hero', 'sanxingdui-explorer', 'archaeologist'].map(badge => `
+                    <div class="badge-item ${earnedBadges.has(badge) ? 'badge-glow' : 'opacity-30'} px-4 py-2 rounded-full font-medium" style="background-color: ${earnedBadges.has(badge) ? config.primary_action_color || defaultConfig.primary_action_color : '#e5e7eb'}; color: white; font-size: ${(config.font_size || defaultConfig.font_size) * 0.85}px;">
+                      ${badge === 'panda-expert' ? '🐼 熊猫专家' : badge === 'conservation-hero' ? '🌿 保护英雄' : badge === 'sanxingdui-explorer' ? '🗿 三星堆探索者' : '🔍 小小考古学家'}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="task-card surface rounded-3xl p-6 shadow-lg cursor-pointer" style="background: linear-gradient(135deg, ${config.surface_color || defaultConfig.surface_color} 0%, #dcfce7 100%);">
+                <div class="text-6xl mb-4 text-center">🐼</div>
+                <h3 class="panda-card-title text-xl font-bold mb-2 text-center" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.25}px;">${config.panda_card_title || defaultConfig.panda_card_title}</h3>
+                <p class="text-content text-center mb-4 opacity-80" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 0.9}px;">认识大熊猫 + 保护行动</p>
+                <div class="flex justify-center gap-2 mb-4">
+                  <span class="px-3 py-1 rounded-full text-xs font-medium" style="background-color: ${completedTasks.has('panda-quiz') ? config.secondary_action_color || defaultConfig.secondary_action_color : '#e5e7eb'}; color: white;">任务1</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-medium" style="background-color: ${completedTasks.has('panda-conservation') ? config.secondary_action_color || defaultConfig.secondary_action_color : '#e5e7eb'}; color: white;">任务2</span>
+                </div>
+                <button class="btn-primary w-full py-3 rounded-full font-bold text-white" style="background-color: ${config.primary_action_color || defaultConfig.primary_action_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.1}px;">开始任务 →</button>
+              </div>
+
+              <div class="task-card surface rounded-3xl p-6 shadow-lg cursor-pointer" style="background: linear-gradient(135deg, ${config.surface_color || defaultConfig.surface_color} 0%, #fef3c7 100%);">
+                <div class="text-6xl mb-4 text-center">🗿</div>
+                <h3 class="sanxingdui-card-title text-xl font-bold mb-2 text-center" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.25}px;">${config.sanxingdui_card_title || defaultConfig.sanxingdui_card_title}</h3>
+                <p class="text-content text-center mb-4 opacity-80" style="color: ${config.text_color || defaultConfig.text_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 0.9}px;">神秘文明 + 考古探索</p>
+                <div class="flex justify-center gap-2 mb-4">
+                  <span class="px-3 py-1 rounded-full text-xs font-medium" style="background-color: ${completedTasks.has('sanxingdui-match') ? config.secondary_action_color || defaultConfig.secondary_action_color : '#e5e7eb'}; color: white;">任务3</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-medium" style="background-color: ${completedTasks.has('archaeology-lab') ? config.secondary_action_color || defaultConfig.secondary_action_color : '#e5e7eb'}; color: white;">任务4</span>
+                </div>
+                <button class="btn-primary w-full py-3 rounded-full font-bold text-white" style="background-color: ${config.primary_action_color || defaultConfig.primary_action_color}; font-size: ${(config.font_size || defaultConfig.font_size) * 1.1}px;">开始任务 →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      updateProgressBar();
+    }
+
+    function logout() {
+      currentUser = null;
+      completedTasks.clear();
+      earnedBadges.clear();
+      wrongAnswers = [];
+      showToast('已退出登录', 'success');
+      navigateTo('auth');
+    }
+
+    function navigateTo(page) {
+      currentPage = page;
+      
+      if (page === 'auth') {
+        renderAuthPage();
+      } else if (page === 'home') {
+        if (!currentUser) {
+          showLoginPrompt();
+          renderAuthPage();
+          return;
+        }
+        renderHomePage();
+      }
+    }
+
+    async function init() {
+      const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        console.error('Failed to initialize data SDK');
+        return;
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  config.background_color = value;
+                  window.elementSdk.setConfig({ background_color: value });
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  config.surface_color = value;
+                  window.elementSdk.setConfig({ surface_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  config.text_color = value;
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  config.primary_action_color = value;
+                  window.elementSdk.setConfig({ primary_action_color: value });
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  config.secondary_action_color = value;
+                  window.elementSdk.setConfig({ secondary_action_color: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                config.font_family = value;
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                config.font_size = value;
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['site_title', config.site_title || defaultConfig.site_title],
+            ['site_subtitle', config.site_subtitle || defaultConfig.site_subtitle],
+            ['main_heading', config.main_heading || defaultConfig.main_heading],
+            ['panda_card_title', config.panda_card_title || defaultConfig.panda_card_title],
+            ['sanxingdui_card_title', config.sanxingdui_card_title || defaultConfig.sanxingdui_card_title]
+          ])
+        });
+      }
+
+      renderAuthPage();
+    }
+
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b5f4f7544181476',t:'MTc2NzA3NDM1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
