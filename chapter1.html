@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Panda Mission | Chapter 1</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div id="topbar" class="topbar"></div>
+    <div id="toast" class="notice" style="display:none;margin-top:14px"></div>
+    
+    <div class="grid">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <h2>第1章：熊猫侦探 · 找线索 <span class="muted" style="font-size:14px">/ Ch1: Panda Detective · Find Clues</span></h2>
+            <p class="muted" data-i18n-zh="在地图上点亮 5 个线索点，收集数字。集齐后即可通关。" data-i18n-en="Tap 5 hotspots on the map and collect digits. Collect all to finish.">在地图上点亮 5 个线索点，收集数字。集齐后即可通关。</p>
+          </div>
+          <div class="row">
+            <button class="btn" id="backBtn">← <span data-i18n-zh="返回总地图" data-i18n-en="Back">返回总地图</span></button>
+          </div>
+        </div>
+        <hr/>
+        <div id="game"></div>
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div id="modalBox"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="chapter1.js"></script>
+</body>
+</html>

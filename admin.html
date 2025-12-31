@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Panda Mission | 管理员平台</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div id="topbar" class="topbar"></div>
+    <div id="toast" class="notice" style="display:none;margin-top:14px"></div>
+    
+  <div class="grid">
+    <div class="card">
+      <h2 data-i18n-zh="管理员平台" data-i18n-en="Admin panel">管理员平台</h2>
+      <p class="muted" data-i18n-zh="⚠️ 注意：这是静态站，管理员只能查看“当前这台设备浏览器里保存过的用户与进度”。要看所有学生进度，需要接后端数据库。" data-i18n-en="⚠️ Note: This is a static site. Admin can only see users/progress saved in THIS browser. For all-student analytics, connect a backend database.">⚠️ 注意：这是静态站，管理员只能查看“当前这台设备浏览器里保存过的用户与进度”。要看所有学生进度，需要接后端数据库。</p>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="exportAllBtn">⬇️ <span data-i18n-zh="导出本机全部用户数据" data-i18n-en="Export all local users">导出本机全部用户数据</span></button>
+        <button class="btn danger" id="wipeBtn">🧨 <span data-i18n-zh="清空本机所有数据" data-i18n-en="Wipe all local data">清空本机所有数据</span></button>
+        <button class="btn" id="backBtn">← <span data-i18n-zh="返回总地图" data-i18n-en="Back to dashboard">返回总地图</span></button>
+      </div>
+      <hr/>
+      <div id="adminTable"></div>
+    </div>
+  </div>
+  
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div id="modalBox"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

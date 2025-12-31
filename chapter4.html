@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Panda Mission | Chapter 4</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div id="topbar" class="topbar"></div>
+    <div id="toast" class="notice" style="display:none;margin-top:14px"></div>
+    
+    <div class="grid">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <h2>第4章：三星堆解码轮盘 <span class="muted" style="font-size:14px">/ Ch4: Sanxingdui Code Wheel</span></h2>
+            <p class="muted" data-i18n-zh="点击“转动轮盘”，得到一个符号；选择匹配的文物，收集 4 个数字。" data-i18n-en="Spin the wheel to get a symbol; pick the matching artifact to collect 4 digits.">点击“转动轮盘”，得到一个符号；选择匹配的文物，收集 4 个数字。</p>
+          </div>
+          <div class="row">
+            <button class="btn" id="backBtn">← <span data-i18n-zh="返回总地图" data-i18n-en="Back">返回总地图</span></button>
+          </div>
+        </div>
+        <hr/>
+        <div id="game"></div>
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div id="modalBox"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="chapter4.js"></script>
+</body>
+</html>

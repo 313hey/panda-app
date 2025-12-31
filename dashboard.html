@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Panda Mission | 总地图</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div id="topbar" class="topbar"></div>
+    <div id="toast" class="notice" style="display:none;margin-top:14px"></div>
+    
+  <div class="grid">
+    <div class="card">
+      <h2 data-i18n-zh="总地图 / 任务仪表盘" data-i18n-en="Dashboard">总地图 / 任务仪表盘</h2>
+      <p class="muted" data-i18n-zh="按顺序完成 1-6 章。每完成一章，会解锁“密码数字”。" data-i18n-en="Finish Chapters 1–6 in order. Each chapter rewards a code digit.">按顺序完成 1-6 章。每完成一章，会解锁“密码数字”。</p>
+      <div class="kpi">
+        <div class="num" id="doneNum">0/6</div>
+        <div class="label" id="doneLabel"></div>
+      </div>
+      <div class="progress" style="margin-top:10px"><div id="bar"></div></div>
+      <hr/>
+      <div id="chapters"></div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between">
+        <button class="btn" id="exportBtn">⬇️ <span data-i18n-zh="导出我的进度" data-i18n-en="Export my progress">导出我的进度</span></button>
+        <button class="btn danger" id="resetBtn">🧹 <span data-i18n-zh="重置进度" data-i18n-en="Reset progress">重置进度</span></button>
+        <button class="btn" id="adminPanelBtn" style="display:none">🔒 <span data-i18n-zh="管理员平台" data-i18n-en="Admin panel">管理员平台</span></button>
+      </div>
+    </div>
+  </div>
+  
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div id="modalBox"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

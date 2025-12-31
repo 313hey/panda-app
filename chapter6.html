@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Panda Mission | Chapter 6</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div id="topbar" class="topbar"></div>
+    <div id="toast" class="notice" style="display:none;margin-top:14px"></div>
+    
+    <div class="grid">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <h2>第6章：文明礼仪 · 小测验 <span class="muted" style="font-size:14px">/ Ch6: Etiquette Quiz</span></h2>
+            <p class="muted" data-i18n-zh="完成 6 题礼仪小测验，答对 4 题即可通关。" data-i18n-en="Take a 6-question etiquette quiz. 4 correct to pass.">完成 6 题礼仪小测验，答对 4 题即可通关。</p>
+          </div>
+          <div class="row">
+            <button class="btn" id="backBtn">← <span data-i18n-zh="返回总地图" data-i18n-en="Back">返回总地图</span></button>
+          </div>
+        </div>
+        <hr/>
+        <div id="game"></div>
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div id="modalBox"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="chapter6.js"></script>
+</body>
+</html>
