@@ -1,0 +1,2496 @@
+<!doctype html>
+<html lang="zh-CN" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>成都时空穿越任务</title>
+<script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+    
+    * {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .panda-bg {
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    }
+    
+    .sanxingdui-bg {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    }
+    
+    .stamp {
+      width: 80px;
+      height: 80px;
+      border: 3px dashed #9ca3af;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      transition: all 0.3s ease;
+    }
+    
+    .stamp.completed {
+      border-color: #10b981;
+      border-style: solid;
+      background: #d1fae5;
+      transform: scale(1.1);
+    }
+    
+    .chapter-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .chapter-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chapter-card.locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .chapter-card.locked:hover {
+      transform: none;
+    }
+    
+    .hotspot {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 215, 0, 0.4);
+      border: 4px solid #ffd700;
+      cursor: pointer;
+      animation: pulse 2s infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .hotspot:hover {
+      transform: scale(1.2);
+      background: rgba(255, 215, 0, 0.6);
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.8; }
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90%;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .detective-notebook {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 3px solid #d97706;
+      border-radius: 1rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .clue-slot {
+      width: 70px;
+      height: 70px;
+      border: 3px dashed #9ca3af;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .clue-slot.collected {
+      border-color: #10b981;
+      border-style: solid;
+      background: #d1fae5;
+      transform: scale(1.05);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .clue-slot.silhouette {
+      opacity: 0.3;
+      font-size: 1.5rem;
+    }
+    
+    .timer-bar {
+      height: 40px;
+      background: #e5e7eb;
+      border-radius: 1rem;
+      overflow: hidden;
+      position: relative;
+      border: 3px solid #6b7280;
+    }
+    
+    .timer-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      transition: width 1s linear;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.125rem;
+    }
+    
+    .timer-fill.warning {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+    
+    .timer-fill.danger {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+      animation: timerPulse 0.5s infinite;
+    }
+    
+    @keyframes timerPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    
+    .hint-flash {
+      animation: hintFlash 1s ease-out;
+    }
+    
+    @keyframes hintFlash {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+      50% { box-shadow: 0 0 30px 15px rgba(255, 215, 0, 0.8); }
+    }
+    
+    .wrong-tap-feedback {
+      position: absolute;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: bold;
+      pointer-events: none;
+      animation: feedbackPop 1s ease-out forwards;
+      z-index: 100;
+    }
+    
+    @keyframes feedbackPop {
+      0% { transform: translateY(0) scale(0.5); opacity: 0; }
+      20% { transform: translateY(-20px) scale(1); opacity: 1; }
+      80% { transform: translateY(-20px) scale(1); opacity: 1; }
+      100% { transform: translateY(-40px) scale(0.8); opacity: 0; }
+    }
+    
+    .slider-container {
+      padding: 1rem 0;
+    }
+    
+    .slider-input {
+      width: 100%;
+      height: 8px;
+      border-radius: 1rem;
+      background: #e5e7eb;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #10b981;
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .slider-input::-moz-range-thumb {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #10b981;
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .choice-option {
+      padding: 1rem;
+      border: 3px solid #d1d5db;
+      border-radius: 0.75rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.125rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    .choice-option:hover {
+      border-color: #10b981;
+      background: #f0fdf4;
+      transform: scale(1.05);
+    }
+    
+    .choice-option.selected {
+      border-color: #10b981;
+      background: #d1fae5;
+    }
+    
+    .tap-option {
+      padding: 1.5rem;
+      border: 3px solid #d1d5db;
+      border-radius: 0.75rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 2rem;
+      text-align: center;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .tap-option:hover {
+      border-color: #10b981;
+      background: #f0fdf4;
+      transform: scale(1.1);
+    }
+    
+    .tap-option.selected {
+      border-color: #10b981;
+      background: #d1fae5;
+      animation: tapBounce 0.5s ease;
+    }
+    
+    @keyframes tapBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    
+    .star-rating {
+      display: flex;
+      gap: 0.5rem;
+      font-size: 2rem;
+      justify-content: center;
+    }
+    
+    .prediction-card {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      border: 3px solid #3b82f6;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .magnifier {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      border: 4px solid #ffd700;
+      border-radius: 50%;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(0px);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+    
+    .food-item {
+      cursor: grab;
+      transition: transform 0.2s;
+    }
+    
+    .food-item:active {
+      cursor: grabbing;
+    }
+    
+    .food-item.dragging {
+      opacity: 0.5;
+    }
+    
+    .tray {
+      min-height: 200px;
+      border: 3px dashed #9ca3af;
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+    }
+    
+    .tray.drag-over {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .meter-fill {
+      transition: width 0.5s ease;
+    }
+    
+    .comic-panel {
+      background: white;
+      border: 4px solid #1f2937;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 5px 5px 0 #1f2937;
+    }
+    
+    .choice-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .choice-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .wheel {
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      border: 8px solid #92400e;
+      position: relative;
+      background: conic-gradient(
+        #fbbf24 0deg 90deg,
+        #f59e0b 90deg 180deg,
+        #d97706 180deg 270deg,
+        #b45309 270deg 360deg
+      );
+      transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    }
+    
+    .wheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 60px;
+      background: #78350f;
+      border-radius: 50%;
+      border: 4px solid #fbbf24;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .wheel-pointer {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 30px solid #dc2626;
+      z-index: 10;
+    }
+    
+    .artifact-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .artifact-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .artifact-card.selected {
+      border-color: #10b981;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    }
+    
+    .artifact-card.revealed .hidden-digit {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .hidden-digit {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      background: #fbbf24;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #78350f;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.5s ease;
+    }
+    
+    .clue-card {
+      background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+      border: 3px solid #f59e0b;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .bronze-box {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
+      border: 4px solid #fbbf24;
+      border-radius: 1rem;
+      position: relative;
+      margin: 0 auto;
+      animation: shake 0.5s ease-in-out;
+    }
+    
+    .bronze-box.opening {
+      animation: openBox 1s ease-in-out forwards;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-5deg); }
+      75% { transform: rotate(5deg); }
+    }
+    
+    @keyframes openBox {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1) rotate(5deg); }
+      100% { transform: scale(1.2); opacity: 0; }
+    }
+    
+    .knowledge-card {
+      background: white;
+      border: 2px solid #d97706;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .knowledge-card:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: translateX(5px);
+    }
+    
+    .dig-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+    
+    .dig-tile {
+      aspect-ratio: 1;
+      background: #92400e;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    
+    .dig-tile:hover {
+      transform: scale(1.05);
+    }
+    
+    .dig-tile.revealed {
+      background: #fef3c7;
+      cursor: default;
+    }
+    
+    .notebook-category {
+      min-height: 120px;
+      border: 2px dashed #9ca3af;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.5);
+    }
+    
+    .notebook-category.drag-over {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .found-item {
+      cursor: grab;
+      transition: transform 0.2s;
+    }
+    
+    .found-item:active {
+      cursor: grabbing;
+    }
+    
+    .lock-display {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    
+    .lock-digit {
+      width: 60px;
+      height: 80px;
+      background: #1f2937;
+      border: 3px solid #fbbf24;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #fbbf24;
+    }
+    
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: #fbbf24;
+      position: absolute;
+      animation: confetti-fall 3s ease-out forwards;
+    }
+    
+    @keyframes confetti-fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .avatar-option {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 3.5rem;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      border: 3px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1;
+    }
+    
+    .avatar-option:hover {
+      transform: scale(1.1);
+      border-color: #9ca3af;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .avatar-option.selected {
+      border-color: #10b981;
+      background: #d1fae5;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    
+    .progress-bar {
+      height: 30px;
+      background: #e5e7eb;
+      border-radius: 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full w-full overflow-auto">
+  <div id="app" class="min-h-full w-full"></div>
+  <script>
+
+    // ===== GitHub Pages 兼容层：用 localStorage 模拟 Canva dataSdk / elementSdk =====
+    (function () {
+      // elementSdk：只提供 config（可选）
+      if (!window.elementSdk) {
+        window.elementSdk = {
+          config: {},
+          init: function ({ defaultConfig }) {
+            window.elementSdk.config = Object.assign({}, defaultConfig);
+          }
+        };
+      }
+
+      // 简单的“数据库”：存到浏览器 localStorage（注意：不同设备/不同浏览器之间不会共享）
+      const LS_KEY = 'cd_time_travel_users_v1';
+
+      function loadAll() {
+        try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveAll(arr) {
+        localStorage.setItem(LS_KEY, JSON.stringify(arr));
+      }
+
+      function ensureIds(arr) {
+        let changed = false;
+        arr.forEach(u => {
+          if (!u.__backendId) { u.__backendId = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '_' + Math.random().toString(16).slice(2)); changed = true; }
+        });
+        if (changed) saveAll(arr);
+      }
+
+      // dataSdk：提供 init/create/update/list
+      window.dataSdk = {
+        async init(handler) {
+          const data = loadAll();
+          ensureIds(data);
+          // 初次回调
+          if (handler && typeof handler.onDataChanged === 'function') handler.onDataChanged(data);
+          return { isOk: true, data };
+        },
+        async create(record) {
+          const data = loadAll();
+          const newRec = Object.assign({}, record);
+          newRec.__backendId = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '_' + Math.random().toString(16).slice(2));
+          data.push(newRec);
+          saveAll(data);
+          return { isOk: true, data: newRec };
+        },
+        async update(record) {
+          const data = loadAll();
+          const idx = data.findIndex(u => u.__backendId === record.__backendId);
+          if (idx >= 0) data[idx] = Object.assign({}, record);
+          else data.push(Object.assign({}, record));
+          saveAll(data);
+          return { isOk: true, data: record };
+        },
+        async list() {
+          const data = loadAll();
+          ensureIds(data);
+          return { isOk: true, data };
+        }
+      };
+    })();
+
+    // ===== 管理员鉴权（静态站“基础保护”，无法做到真正隐藏） =====
+    const ADMIN_USERNAME = 'admin';
+    // 默认密码：Panda-2026!  （你部署后务必改）
+    const ADMIN_PASSWORD_SHA256 = '442deb6fdc91269cd17e858311b19ad86758d5f85407ffc5b1c9793ec50300ba';
+
+    async function sha256(text) {
+      const data = new TextEncoder().encode(text);
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    function isAdminAuthed() { return localStorage.getItem('adminAuthed') === '1'; }
+    function setAdminAuthed(v) { v ? localStorage.setItem('adminAuthed', '1') : localStorage.removeItem('adminAuthed'); }
+
+    const defaultConfig = {
+      site_title: "成都时空穿越任务",
+      site_subtitle: "熊猫守护者 × 三星堆解码员",
+      welcome_message: "欢迎来到成都时空穿越任务！",
+      mission_description: "完成6个章节，收集护照印章和收藏卡片"
+    };
+
+    let currentUser = null;
+    let allUsers = [];
+    let currentView = 'login';
+    let chapter1Clues = [];
+    let chapter1CollectedClues = [];
+    let chapter1CurrentClue = null;
+    let chapter1Timer = 90;
+    let chapter1TimerInterval = null;
+    let chapter1HintsRemaining = 3;
+    let chapter1WrongTaps = 0;
+    let chapter2Foods = [];
+    let chapter2Health = 0;
+    let chapter2Energy = 0;
+    let chapter3Scene = 0;
+    let chapter4Round = 0;
+    let chapter4Code = [];
+    let chapter4CurrentClue = null;
+    let chapter4CollectedKnowledge = [];
+    let chapter5Revealed = [];
+    let chapter5Items = [];
+
+    const avatars = ['🐼', '🐨', '🦁', '🐯', '🦊', '🐻'];
+    
+    const chapter1HotspotData = [
+      { 
+        x: 20, y: 30, 
+        emoji: '🎋', 
+        name: '竹子秘密',
+        fact: '大熊猫每天要吃12-38公斤竹子！它们有特殊的"假拇指"帮助抓竹子。',
+        question: '熊猫一天要吃多少竹子？',
+        interaction: 'slider',
+        sliderMin: 5,
+        sliderMax: 50,
+        sliderCorrect: 25,
+        sliderTolerance: 15
+      },
+      { 
+        x: 60, y: 20, 
+        emoji: '🐾', 
+        name: '神奇爪子',
+        fact: '熊猫的爪子有6个"手指"，其中一个是假拇指！这让它们能牢牢抓住竹子。',
+        question: '熊猫的爪子有几个"手指"？',
+        interaction: 'choice',
+        choices: ['4个', '5个', '6个'],
+        correctChoice: 2
+      },
+      { 
+        x: 40, y: 60, 
+        emoji: '💤', 
+        name: '睡眠时间',
+        fact: '大熊猫每天要睡10-16个小时，剩下的时间都在吃竹子！',
+        question: '点击熊猫最喜欢的睡觉姿势：',
+        interaction: 'tap',
+        tapOptions: ['🐼躺平', '🐼趴着', '🐼靠树'],
+        correctTap: 1
+      },
+      { 
+        x: 75, y: 50, 
+        emoji: '🌿', 
+        name: '消化系统',
+        fact: '竹子占熊猫食物的99%，但它们的消化系统其实更适合吃肉！',
+        question: '熊猫的消化系统更适合吃什么？',
+        interaction: 'choice',
+        choices: ['竹子', '肉类', '水果'],
+        correctChoice: 1
+      },
+      { 
+        x: 15, y: 70, 
+        emoji: '👶', 
+        name: '熊猫宝宝',
+        fact: '刚出生的熊猫宝宝只有100克重，像一只小老鼠！要6-8周才能睁开眼睛。',
+        question: '熊猫宝宝刚出生多重？',
+        interaction: 'slider',
+        sliderMin: 50,
+        sliderMax: 500,
+        sliderCorrect: 100,
+        sliderTolerance: 50
+      }
+    ];
+
+    const foodItems = [
+      { id: 'bamboo', emoji: '🎋', name: '新鲜竹子', health: 30, energy: 25 },
+      { id: 'bamboo-shoot', emoji: '🌱', name: '竹笋', health: 25, energy: 30 },
+      { id: 'apple', emoji: '🍎', name: '苹果', health: 15, energy: 20 },
+      { id: 'carrot', emoji: '🥕', name: '胡萝卜', health: 10, energy: 15 },
+      { id: 'candy', emoji: '🍬', name: '糖果', health: -20, energy: 5 },
+      { id: 'chips', emoji: '🍟', name: '薯条', health: -25, energy: 10 }
+    ];
+
+    const comicScenes = [
+      {
+        text: '你在动物园看到有人想给熊猫喂食物...',
+        choices: [
+          { text: '立即制止并告诉工作人员', correct: true, feedback: '太棒了！随意喂食可能伤害熊猫健康。' },
+          { text: '假装没看见', correct: false, feedback: '不对哦！我们应该保护熊猫，制止不当行为。' }
+        ]
+      },
+      {
+        text: '你发现有人在熊猫栖息地乱扔垃圾...',
+        choices: [
+          { text: '捡起垃圾扔进垃圾桶', correct: true, feedback: '做得好！保持环境清洁对熊猫很重要。' },
+          { text: '继续走自己的路', correct: false, feedback: '我们都应该保护环境，为熊猫创造更好的家园。' }
+        ]
+      },
+      {
+        text: '你看到有人在熊猫馆用闪光灯拍照...',
+        choices: [
+          { text: '提醒他关闭闪光灯', correct: true, feedback: '做得对！闪光灯会惊吓和伤害熊猫的眼睛。' },
+          { text: '不管他，继续参观', correct: false, feedback: '闪光灯会伤害熊猫，我们应该及时制止哦！' }
+        ]
+      }
+    ];
+
+    const artifacts = [
+      { 
+        id: 'mask', 
+        emoji: '🎭', 
+        name: '青铜面具',
+        digit: 3,
+        clues: [
+          '我有夸张的眼睛和耳朵',
+          '古蜀人用我祭祀神灵',
+          '我的眼球向外凸出，非常神秘'
+        ],
+        knowledge: '青铜面具是三星堆最具代表性的文物之一。它有宽大的眼睛、高挺的鼻梁和巨大的耳朵，眼球向外凸出，造型夸张神秘。古蜀人相信这些面具代表神灵，用于重要的祭祀仪式。'
+      },
+      { 
+        id: 'tree', 
+        emoji: '🌳', 
+        name: '青铜神树',
+        digit: 8,
+        clues: [
+          '我高达3.96米，是青铜器中的巨人',
+          '我的枝头站着9只神鸟',
+          '古人相信我连接天地'
+        ],
+        knowledge: '青铜神树高3.96米，是世界上最大的单件青铜文物。树分三层，每层有三根树枝，枝头站着9只神鸟。它��征着"通天神树"，反映��古蜀人认为神树可以沟通天地��神的宇宙观。'
+      },
+      { 
+        id: 'bird', 
+        emoji: '🦅', 
+        name: '青铜神鸟',
+        digit: 5,
+        clues: [
+          '我站在神树的枝头',
+          '传说我是太阳的使者',
+          '我代表着古蜀人对天空的崇拜'
+        ],
+        knowledge: '青铜神鸟站立在神树枝头，可能代表古代神话中的"金乌"——太阳里的神鸟。古蜀人崇拜太阳，认为神鸟是太阳的使者，能够在天地之间传递信息。'
+      },
+      { 
+        id: 'figure', 
+        emoji: '🗿', 
+        name: '青铜立人',
+        digit: 2,
+        clues: [
+          '我身高1.8米，双手环抱',
+          '我可能是古蜀国的国王或大祭司',
+          '我的衣服上有精美的龙纹和云纹'
+        ],
+        knowledge: '青铜立人像高1.8米，是世界上最高大、最完整的青铜人像。他双手环���，可能原本握着权杖或象牙���他穿着华丽的长袍，上面有精美���龙纹和云纹，很可能代表古蜀国的国王或最高祭司。'
+      }
+    ];
+
+    const digItems = [
+      { emoji: '🏺', name: '陶罐', category: 'ancient' },
+      { emoji: '⚱️', name: '青铜器', category: 'ancient' },
+      { emoji: '📱', name: '手机', category: 'modern' },
+      { emoji: '🔍', name: '放大镜', category: 'modern' },
+      { emoji: '🗿', name: '雕像', category: 'ancient' },
+      { emoji: '💎', name: '玉石', category: 'ancient' },
+      { emoji: '⌚', name: '手表', category: 'modern' },
+      { emoji: '📜', name: '竹简', category: 'ancient' },
+      { emoji: '🔨', name: '石器工具', category: 'ancient' },
+      { emoji: '🎨', name: '矿物颜料', category: 'ancient' },
+      { emoji: '📿', name: '玉珠串', category: 'ancient' },
+      { emoji: '🔦', name: '手电筒', category: 'modern' }
+    ];
+
+    const dataHandler = {
+      onDataChanged(data) {
+        allUsers = data;
+        
+        const savedUserId = localStorage.getItem('currentUserId');
+        if (savedUserId && !currentUser) {
+          const savedUser = data.find(u => u.__backendId === savedUserId);
+          if (savedUser) {
+            currentUser = savedUser;
+            currentView = 'dashboard';
+            console.log('自动登录成功:', savedUser.displayName);
+          }
+        }
+        
+        if (currentUser && currentUser.__backendId) {
+          const updated = data.find(u => u.__backendId === currentUser.__backendId);
+          if (updated) {
+            currentUser = updated;
+          }
+        }
+        
+        if (document.getElementById('app').innerHTML === '') {
+          render();
+        }
+      }
+    };
+
+    async function init() {
+      const result = await window.dataSdk.init(dataHandler);
+      if (!result.isOk) {
+        showToast('初始化失败，请刷新页��', 'error');
+      }
+    }
+
+    async function register(username, password, displayName, avatar) {
+      if (!username || !password || !displayName) {
+        showToast('请填写所有信息', 'error');
+        return;
+      }
+
+      const existing = allUsers.find(u => u.username === username);
+      if (existing) {
+        showToast('用户名已存在', 'error');
+        return;
+      }
+
+      const result = await window.dataSdk.create({
+        username,
+        password,
+        displayName,
+        avatar,
+        createdAt: new Date().toISOString(),
+        chapter1Complete: false,
+        chapter2Complete: false,
+        chapter3Complete: false,
+        chapter4Complete: false,
+        chapter5Complete: false,
+        chapter6Complete: false,
+        chapter4Code: '',
+        lastActive: new Date().toISOString()
+      });
+
+      if (result.isOk) {
+        showToast('注册成功！请登录', 'success');
+        currentView = 'login';
+        render();
+      } else {
+        showToast('注册失败，请重试', 'error');
+      }
+    }
+
+    async function login(username, password) {
+      if (!username || !password) {
+        showToast('请输入用户名和密码', 'error');
+        return;
+      }
+
+      const user = allUsers.find(u => u.username === username && u.password === password);
+      if (user) {
+        currentUser = { ...user, lastActive: new Date().toISOString() };
+        await window.dataSdk.update(currentUser);
+        
+        localStorage.setItem('currentUserId', user.__backendId);
+        
+        currentView = 'dashboard';
+        showToast(`欢迎回来，${user.displayName}！`, 'success');
+        render();
+      } else {
+        showToast('用户名或密码错误', 'error');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUserId');
+      
+      currentUser = null;
+      currentView = 'login';
+      render();
+    }
+
+    async function completeChapter(chapterNum) {
+      const key = `chapter${chapterNum}Complete`;
+      currentUser = { ...currentUser, [key]: true, lastActive: new Date().toISOString() };
+      await window.dataSdk.update(currentUser);
+      showConfetti();
+      showToast(`第${chapterNum}章完成！获得印章✓`, 'success');
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+          <span class="font-medium">${message}</span>
+        </div>
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function showConfetti() {
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + '%';
+          confetti.style.background = ['#fbbf24', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6'][Math.floor(Math.random() * 5)];
+          confetti.style.animationDelay = Math.random() * 0.5 + 's';
+          document.body.appendChild(confetti);
+          setTimeout(() => confetti.remove(), 3000);
+        }, i * 30);
+      }
+    }
+
+    function getCompletedCount() {
+      if (!currentUser) return 0;
+      let count = 0;
+      for (let i = 1; i <= 6; i++) {
+        if (currentUser[`chapter${i}Complete`]) count++;
+      }
+      return count;
+    }
+
+    function renderLogin() {
+      return `
+        <div class="gradient-bg min-h-full w-full flex items-center justify-center p-4">
+          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <div class="text-center mb-8">
+              <div class="text-6xl mb-4">🐼🏛️</div>
+              <h1 class="text-3xl font-bold text-gray-800 mb-2">${window.elementSdk?.config?.site_title || defaultConfig.site_title}</h1>
+              <p class="text-lg text-gray-600">${window.elementSdk?.config?.site_subtitle || defaultConfig.site_subtitle}</p>
+            </div>
+            
+            <div id="login-form">
+              <input type="text" id="login-username" placeholder="用户名" 
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-3 text-lg focus:border-purple-500 focus:outline-none">
+              <input type="password" id="login-password" placeholder="密码" 
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-4 text-lg focus:border-purple-500 focus:outline-none">
+              <button onclick="handleLogin()" 
+                class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-purple-700 transition mb-3">
+                登录
+              </button>
+              <button onclick="currentView='register'; render();" 
+                class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-bold text-lg hover:bg-gray-300 transition">
+                注册新账号
+              </button>
+            </div>
+</div>
+        </div>
+      `;
+    }
+
+    function renderRegister() {
+      return `
+        <div class="gradient-bg min-h-full w-full flex items-center justify-center p-4">
+          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <div class="text-center mb-6">
+              <div class="text-5xl mb-3">🎒</div>
+              <h2 class="text-2xl font-bold text-gray-800">创建你的探险档案</h2>
+            </div>
+            
+            <div id="register-form">
+              <input type="text" id="reg-username" placeholder="用户名（用于登录）" 
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-3 text-lg focus:border-purple-500 focus:outline-none">
+              <input type="password" id="reg-password" placeholder="密码" 
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-3 text-lg focus:border-purple-500 focus:outline-none">
+              <input type="text" id="reg-displayname" placeholder="你的名字" 
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-4 text-lg focus:border-purple-500 focus:outline-none">
+              
+              <div class="mb-4">
+                <p class="text-sm font-medium text-gray-700 mb-3 text-center">选择你的头像：</p>
+                <div class="grid grid-cols-3 gap-3" id="avatar-selector">
+                  ${avatars.map(a => `
+                    <div class="avatar-option" data-avatar="${a}" onclick="selectAvatar('${a}')">
+                      ${a}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              
+              <button onclick="handleRegister()" 
+                class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-purple-700 transition mb-3">
+                开始冒险
+              </button>
+              <div class="flex gap-2">
+              <button onclick="setAdminAuthed(false); currentView='login'; render();" class="px-4 py-2 bg-white/90 rounded-lg shadow hover:shadow-lg transition font-bold">退出管理员</button>
+              <button onclick="currentView='login'; render();" 
+                class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-bold text-lg hover:bg-gray-300 transition">
+                返回登录
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDashboard() {
+      const completed = getCompletedCount();
+      const progress = (completed / 6) * 100;
+      
+      return `
+        <div class="gradient-bg min-h-full w-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+              <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3">
+                  <span class="text-4xl">${currentUser.avatar}</span>
+                  <div>
+                    <h2 class="text-2xl font-bold text-gray-800">${currentUser.displayName}</h2>
+                    <p class="text-gray-600">探险者档案</p>
+                  </div>
+                </div>
+                <button onclick="logout()" 
+                  class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                  退出
+                </button>
+              </div>
+              
+              <div class="mb-4">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                  <span>任务进度</span>
+                  <span>${completed}/6 章节完成</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${progress}%">
+                    ${progress > 0 ? Math.round(progress) + '%' : ''}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex justify-around py-4 border-t border-gray-200">
+                ${[1,2,3,4,5,6].map(i => `
+                  <div class="stamp ${currentUser[`chapter${i}Complete`] ? 'completed' : ''}">
+                    ${currentUser[`chapter${i}Complete`] ? '✓' : i}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              ${renderChapterCard(1, '🔍', '熊猫线索探索', '用放大镜发现竹林秘密', 'panda-bg', true)}
+              ${renderChapterCard(2, '🍱', '营养配餐实验室', '为熊猫搭配健康食物', 'panda-bg', true)}
+              ${renderChapterCard(3, '💚', '保护行动选择', '做出正确的保护决定', 'panda-bg', true)}
+              ${renderChapterCard(4, '🎡', '三星堆解码轮盘', '破解文物密码收集知识', 'sanxingdui-bg', true)}
+              ${renderChapterCard(5, '⛏️', '考古挖掘笔记', '发掘文物并分类记录', 'sanxingdui-bg', true)}
+              ${renderChapterCard(6, '🏆', '��极密室挑战', '解锁证书完成任务', 'gradient-bg', true)}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChapterCard(num, emoji, title, desc, bgClass, unlocked) {
+      const completed = currentUser[`chapter${num}Complete`];
+      return `
+        <div class="chapter-card ${bgClass} rounded-xl p-6 ${unlocked ? '' : 'locked'}" 
+          onclick="${unlocked ? `currentView='chapter${num}'; render();` : ''}">
+          <div class="text-5xl mb-3">${emoji}</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">第${num}章：${title}</h3>
+          <p class="text-gray-700 mb-3">${desc}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium ${completed ? 'text-green-600' : 'text-gray-500'}">
+              ${completed ? '✓ 已完成' : unlocked ? '点击开始' : '🔒 未解锁'}
+            </span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChapter1() {
+      const timerPercent = (chapter1Timer / 90) * 100;
+      const timerClass = chapter1Timer > 60 ? '' : chapter1Timer > 30 ? 'warning' : 'danger';
+      const stars = chapter1Timer > 60 ? 3 : chapter1Timer > 30 ? 2 : 1;
+      
+      return `
+        <div class="panda-bg min-h-full w-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <button onclick="stopChapter1Timer(); currentView='dashboard'; render();" 
+              class="mb-4 px-6 py-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition font-bold text-lg">
+              ← 返回地图
+            </button>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-4">
+              <div class="text-center mb-4">
+                <div class="text-5xl mb-3">🔍</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">第1章：熊猫侦探任务</h2>
+                <p class="text-gray-600 text-lg">用放大镜找到5个线索，完成互动挑战！</p>
+              </div>
+              
+              <div class="detective-notebook">
+                <div class="flex justify-between items-center mb-3">
+                  <h3 class="text-xl font-bold text-amber-900 flex items-center gap-2">
+                    📔 侦探笔记本
+                  </h3>
+                  <span class="text-lg font-bold text-amber-900">${chapter1CollectedClues.length}/5</span>
+                </div>
+                <div class="flex gap-3 justify-center flex-wrap">
+                  ${chapter1HotspotData.map((spot, i) => {
+                    const collected = chapter1CollectedClues.includes(i);
+                    return `
+                      <div class="clue-slot ${collected ? 'collected' : 'silhouette'}" title="${collected ? spot.name : '???'}">
+                        ${collected ? spot.emoji : '❓'}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+              
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-bold text-gray-700">⏱️ 挑战计时</span>
+                  <div class="star-rating">
+                    ${[1,2,3].map(s => `<span>${s <= stars ? '⭐' : '☆'}</span>`).join('')}
+                  </div>
+                </div>
+                <div class="timer-bar">
+                  <div class="timer-fill ${timerClass}" style="width: ${timerPercent}%">
+                    ${chapter1Timer}秒
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex gap-3 mb-4">
+                <button onclick="useHint()" 
+                  ${chapter1HintsRemaining === 0 ? 'disabled' : ''}
+                  class="flex-1 px-4 py-3 rounded-lg font-bold text-lg transition ${
+                    chapter1HintsRemaining > 0 
+                      ? 'bg-yellow-400 hover:bg-yellow-500 text-gray-800' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }">
+                  💡 提示 (${chapter1HintsRemaining}/3)
+                </button>
+                <button onclick="chapter1WrongTaps = 0; render();" 
+                  class="px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg font-bold text-lg transition">
+                  🔄
+                </button>
+              </div>
+              
+              <div class="relative bg-gradient-to-b from-green-200 to-green-400 rounded-xl overflow-hidden" 
+                style="height: 400px; touch-action: none;" 
+                id="bamboo-forest" 
+                onmousemove="moveMagnifier(event)" 
+                ontouchmove="moveMagnifier(event)"
+                onclick="handleForestClick(event)">
+                <div class="absolute inset-0 flex items-center justify-center text-6xl opacity-20 pointer-events-none">
+                  🎋🎋🎋🎋🎋🎋🎋🎋
+                </div>
+                ${chapter1HotspotData.map((spot, i) => 
+                  chapter1CollectedClues.includes(i) ? '' : `
+                  <div class="hotspot" 
+                    style="left: ${spot.x}%; top: ${spot.y}%;" 
+                    data-clue-index="${i}"
+                    onclick="event.stopPropagation(); openClueCard(${i})">
+                    ${spot.emoji}
+                  </div>
+                `).join('')}
+                <div class="magnifier" id="magnifier"></div>
+              </div>
+              
+              ${chapter1WrongTaps > 0 ? `
+                <div class="mt-4 bg-red-50 border-2 border-red-300 rounded-lg p-3 text-center">
+                  <p class="text-red-700 font-medium">❌ 这里没有线索哦！继续寻找吧~ (${chapter1WrongTaps}次)</p>
+                </div>
+              ` : ''}
+            </div>
+            
+            ${chapter1CollectedClues.length > 0 ? `
+              <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">📚 已收集的线索</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  ${chapter1CollectedClues.map(i => {
+                    const clue = chapter1HotspotData[i];
+                    return `
+                      <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-400 rounded-lg p-4">
+                        <div class="flex items-center gap-3 mb-2">
+                          <div class="text-3xl">${clue.emoji}</div>
+                          <div class="font-bold text-lg text-gray-800">${clue.name}</div>
+                        </div>
+                        <p class="text-sm text-gray-700">${clue.fact}</p>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        ${chapter1CurrentClue !== null ? renderClueModal() : ''}
+        ${chapter1CollectedClues.length === 5 ? renderPredictionModal() : ''}
+      `;
+    }
+    
+    function renderClueModal() {
+      const clue = chapter1HotspotData[chapter1CurrentClue];
+      
+      return `
+        <div class="modal-overlay" onclick="if(event.target === this) closeClueModal()">
+          <div class="modal-content">
+            <div class="text-center mb-6">
+              <div class="text-6xl mb-3">${clue.emoji}</div>
+              <h3 class="text-2xl font-bold text-gray-800 mb-2">${clue.name}</h3>
+              <p class="text-gray-700 leading-relaxed">${clue.fact}</p>
+            </div>
+            
+            <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
+              <p class="text-lg font-bold text-blue-900 mb-4 text-center">${clue.question}</p>
+              
+              ${clue.interaction === 'slider' ? `
+                <div class="slider-container">
+                  <input type="range" 
+                    class="slider-input" 
+                    id="clue-slider"
+                    min="${clue.sliderMin}" 
+                    max="${clue.sliderMax}" 
+                    value="${Math.floor((clue.sliderMin + clue.sliderMax) / 2)}"
+                    oninput="updateSliderValue(this.value)">
+                  <div class="text-center mt-3">
+                    <span class="text-3xl font-bold text-gray-800" id="slider-value">
+                      ${Math.floor((clue.sliderMin + clue.sliderMax) / 2)}
+                    </span>
+                    <span class="text-lg text-gray-600">公斤</span>
+                  </div>
+                </div>
+              ` : clue.interaction === 'choice' ? `
+                <div class="grid grid-cols-1 gap-3">
+                  ${clue.choices.map((choice, i) => `
+                    <div class="choice-option" onclick="selectChoice(${i})">
+                      ${choice}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : clue.interaction === 'tap' ? `
+                <div class="grid grid-cols-3 gap-3">
+                  ${clue.tapOptions.map((option, i) => `
+                    <div class="tap-option" onclick="selectTap(${i})">
+                      ${option}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+            
+            <button onclick="collectClue()" 
+              class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-bold text-xl transition shadow-lg">
+              ✅ 添加到侦探笔记本
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderPredictionModal() {
+      return `
+        <div class="modal-overlay">
+          <div class="modal-content">
+            <div class="text-center mb-6">
+              <div class="text-6xl mb-3">🎉</div>
+              <h3 class="text-2xl font-bold text-gray-800 mb-2">所有线索收集完成！</h3>
+              <p class="text-gray-600">现在来测试你的侦探推理能力！</p>
+            </div>
+            
+            <div class="prediction-card mb-6">
+              <p class="text-xl font-bold text-blue-900 mb-4 text-center">
+                🤔 根据你收集的线索，熊猫现在最可能在做什么？
+              </p>
+              <div class="grid grid-cols-1 gap-3">
+                <div class="choice-option" onclick="makePrediction(0)">
+                  🎋 吃竹子（它们一天要吃很多！）
+                </div>
+                <div class="choice-option" onclick="makePrediction(1)">
+                  💤 睡觉（它们每天睡10-16小时）
+                </div>
+                <div class="choice-option" onclick="makePrediction(2)">
+                  🏃 跑步锻炼（保持健康）
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-center">
+              <p class="text-sm text-gray-700">💡 提示：想想熊猫一天里大部分时间在做什么</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChapter2() {
+      return `
+        <div class="panda-bg min-h-full w-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <button onclick="currentView='dashboard'; chapter2Foods=[]; chapter2Health=0; chapter2Energy=0; render();" 
+              class="mb-4 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">
+              ← 返回地图
+            </button>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+              <div class="text-center mb-6">
+                <div class="text-5xl mb-3">🍱</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">第2章：营养配餐实验室</h2>
+                <p class="text-gray-600">拖动食物到托盘，健康值达到80分即可过关！</p>
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <div class="text-sm text-gray-600 mb-2">健康值</div>
+                  <div class="progress-bar">
+                    <div class="meter-fill bg-green-500 justify-end pr-3" style="width: ${Math.max(0, chapter2Health)}%">
+                      ${chapter2Health}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-600 mb-2">能量值</div>
+                  <div class="progress-bar">
+                    <div class="meter-fill bg-blue-500 justify-end pr-3" style="width: ${Math.max(0, chapter2Energy)}%">
+                      ${chapter2Energy}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-6">
+                <p class="text-sm font-medium text-gray-700 mb-3">可选食物：</p>
+                <div class="grid grid-cols-3 gap-3">
+                  ${foodItems.map(food => `
+                    <div class="food-item bg-white border-2 border-gray-300 rounded-lg p-4 text-center" 
+                      draggable="true" 
+                      data-food-id="${food.id}"
+                      data-emoji="${food.emoji}"
+                      data-name="${food.name}"
+                      data-health="${food.health}"
+                      data-energy="${food.energy}">
+                      <div class="text-4xl mb-2">${food.emoji}</div>
+                      <div class="text-sm font-medium">${food.name}</div>
+                      <div class="text-xs text-gray-500">健康${food.health > 0 ? '+' : ''}${food.health}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              
+              <div class="tray p-4" id="food-tray">
+                <p class="text-center text-gray-500 mb-3">拖动食物到这里</p>
+                <div class="flex flex-wrap gap-3 justify-center">
+                  ${chapter2Foods.map(food => `
+                    <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-3 text-center">
+                      <div class="text-3xl">${food.emoji}</div>
+                      <div class="text-xs">${food.name}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              
+              ${chapter2Health >= 80 ? `
+                <button onclick="completeChapter(2); currentView='dashboard'; chapter2Foods=[]; chapter2Health=0; chapter2Energy=0; render();" 
+                  class="w-full mt-6 bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition">
+                  完成第2章 🎉
+                </button>
+              ` : chapter2Foods.length > 0 ? `
+                <button onclick="chapter2Foods=[]; chapter2Health=0; chapter2Energy=0; render();" 
+                  class="w-full mt-6 bg-gray-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-gray-700 transition">
+                  重新配餐
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChapter3() {
+      const scene = comicScenes[chapter3Scene];
+      return `
+        <div class="panda-bg min-h-full w-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <button onclick="currentView='dashboard'; chapter3Scene=0; render();" 
+              class="mb-4 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">
+              ← 返回地图
+            </button>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+              <div class="text-center mb-6">
+                <div class="text-5xl mb-3">💚</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">第3章：保护行动选择</h2>
+                <p class="text-gray-600">场景 ${chapter3Scene + 1}/3</p>
+              </div>
+              
+              <div class="comic-panel mb-6">
+                <div class="text-center mb-6">
+                  <div class="text-6xl mb-4">🐼</div>
+                  <p class="text-xl text-gray-800 leading-relaxed">${scene.text}</p>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-3">
+                  ${scene.choices.map((choice, i) => `
+                    <button onclick="makeChoice(${i})" 
+                      class="choice-btn bg-purple-100 hover:bg-purple-200 text-gray-800 py-4 px-6 rounded-lg font-medium text-lg text-left border-2 border-purple-300">
+                      ${choice.text}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChapter4() {
+      return `
+        <div class="sanxingdui-bg min-h-full w-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <button onclick="currentView='dashboard'; chapter4Round=0; chapter4Code=[]; chapter4CurrentClue=null; chapter4CollectedKnowledge=[]; render();" 
+              class="mb-4 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">
+              ← 返回地图
+            </button>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+              <div class="text-center mb-6">
+                <div class="text-5xl mb-3">🎡</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">第4章：三星堆解码轮盘</h2>
+                <p class="text-gray-600">根据线索卡片，选择正确的文物，收集4位密码！</p>
+              </div>
+              
+              <div class="lock-display">
+                ${[0,1,2,3].map(i => `
+                  <div class="lock-digit">
+                    ${chapter4Code[i] !== undefined ? chapter4Code[i] : '?'}
+                  </div>
+                `).join('')}
+              </div>
+              
+              ${chapter4Round < 4 ? `
+                ${!chapter4CurrentClue ? `
+                  <div class="flex justify-center mb-6 relative">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheel">
+                      <div class="wheel-center">🎡</div>
+                    </div>
+                  </div>
+                  
+                  <button onclick="spinWheel()" id="spin-btn"
+                    class="w-full bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700 transition mb-6">
+                    转动轮盘获取线索 🎡
+                  </button>
+                ` : `
+                  <div class="clue-card mb-6">
+                    <h3 class="text-xl font-bold text-amber-900 mb-4 text-center">🔍 文物线索卡</h3>
+                    <ul class="space-y-2">
+                      ${chapter4CurrentClue.clues.map(clue => `
+                        <li class="flex items-start gap-2">
+                          <span class="text-amber-600">•</span>
+                          <span class="text-gray-700">${clue}</span>
+                        </li>
+                      `).join('')}
+                    </ul>
+                  </div>
+                  
+                  <p class="text-center text-lg font-medium mb-4 text-gray-700">根据线索，这是哪件文物？</p>
+                  <div class="grid grid-cols-2 gap-4 mb-6">
+                    ${artifacts.map(art => {
+                      let imgSrc = '';
+                      if (art.id === 'figure') imgSrc = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUxjmsbb_IhxK3QMs2mBMW-tUq38AC1BraTw&s';
+                      else if (art.id === 'tree') imgSrc = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT30WLs-AO9zRQYIkwKCzxKKcDMeOCE0Zbveg&s';
+                      else if (art.id === 'mask') imgSrc = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKi1e_Th48O-CDnLM_M1ZbYilsVZ7t6eHhWw&s';
+                      else if (art.id === 'bird') imgSrc = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5LrmafiOk-LbfNVNz9E6_PuDzp4mbvpEsTw&s';
+                      
+                      return `
+                      <div class="artifact-card bg-amber-50 border-2 border-amber-300 rounded-lg p-4 text-center" 
+                        onclick="selectArtifact('${art.id}')">
+                        <div class="hidden-digit">${art.digit}</div>
+                        ${imgSrc ? `
+                          <img src="${imgSrc}" 
+                            alt="${art.name}" 
+                            class="w-full h-32 object-contain mb-2"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                          <div class="text-5xl mb-2" style="display:none;">${art.emoji}</div>
+                        ` : `
+                          <div class="text-5xl mb-2">${art.emoji}</div>
+                        `}
+                        <div class="font-medium text-lg">${art.name}</div>
+                      </div>
+                      `;
+                    }).join('')}
+                  </div>
+                `}
+              ` : `
+                <div class="mb-6">
+                  <div class="bronze-box ${chapter4Code.length === 4 ? 'opening' : ''}" id="bronze-box">
+                    <div class="absolute inset-0 flex items-center justify-center text-6xl">
+                      🏺
+                    </div>
+                  </div>
+                  <p class="text-center text-xl font-bold text-amber-900 mt-4">
+                    密码收集完成！青铜宝盒已解锁！
+                  </p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 mb-6">
+                  <h3 class="text-2xl font-bold text-amber-900 mb-4 text-center">📚 你的文物知识收藏</h3>
+                  <div class="space-y-3">
+                    ${chapter4CollectedKnowledge.map(item => `
+                      <div class="knowledge-card">
+                        <div class="flex items-start gap-3">
+                          <div class="text-4xl">${item.emoji}</div>
+                          <div class="flex-1">
+                            <h4 class="font-bold text-lg text-gray-800 mb-1">${item.name}</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">${item.knowledge}</p>
+                          </div>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+                
+                <button onclick="completeChapter(4); currentUser.chapter4Code=chapter4Code.join(''); window.dataSdk.update(currentUser); currentView='dashboard'; chapter4Round=0; chapter4Code=[]; chapter4CurrentClue=null; chapter4CollectedKnowledge=[]; render();" 
+                  class="w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition">
+                  完成第4章 🎉
+                </button>
+              `}
+              
+              ${chapter4CollectedKnowledge.length > 0 && chapter4Round < 4 ? `
+                <div class="bg-blue-50 rounded-lg p-4 mt-6">
+                  <h4 class="font-bold text-blue-900 mb-2">💡 已收集知识：${chapter4CollectedKnowledge.length}/4</h4>
+                  <div class="flex gap-2 flex-wrap">
+                    ${chapter4CollectedKnowledge.map(item => `
+                      <span class="text-2xl">${item.emoji}</span>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChapter5() {
+      return `
+        <div class="sanxingdui-bg min-h-full w-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <button onclick="currentView='dashboard'; chapter5Revealed=[]; chapter5Items=[]; render();" 
+              class="mb-4 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">
+              ← 返回地图
+            </button>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+              <div class="text-center mb-6">
+                <div class="text-5xl mb-3">⛏️</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">第5章：考古挖掘笔记</h2>
+                <p class="text-gray-600">点击挖掘，将文物拖到正确分类！</p>
+              </div>
+              
+              <div class="dig-grid mb-6" id="dig-grid">
+                ${digItems.map((item, i) => `
+                  <div class="dig-tile ${chapter5Revealed.includes(i) ? 'revealed' : ''}" 
+                    onclick="${chapter5Revealed.includes(i) ? '' : `revealTile(${i})`}">
+                    ${chapter5Revealed.includes(i) ? item.emoji : '🟫'}
+                  </div>
+                `).join('')}
+              </div>
+              
+              ${chapter5Revealed.length > 0 ? `
+                <div class="mb-6">
+                  <p class="text-sm font-medium text-gray-700 mb-3">已发现的物品（拖动到下方分类）：</p>
+                  <div class="flex flex-wrap gap-3 justify-center mb-4">
+                    ${chapter5Revealed.map(i => {
+                      const item = digItems[i];
+                      const placed = chapter5Items.find(p => p.index === i);
+                      return placed ? '' : `
+                        <div class="found-item bg-yellow-50 border-2 border-yellow-400 rounded-lg p-3 text-center" 
+                          draggable="true" data-item-index="${i}">
+                          <div class="text-3xl">${item.emoji}</div>
+                          <div class="text-xs">${item.name}</div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                  
+                  <div class="grid grid-cols-3 gap-3">
+                    <div class="notebook-category" data-category="ancient">
+                      <p class="text-sm font-bold text-center mb-2">古代文物</p>
+                      ${chapter5Items.filter(p => p.category === 'ancient').map(p => `
+                        <div class="placed-item bg-amber-100 rounded p-2 text-center mb-2 cursor-grab" 
+                          draggable="true" data-item-index="${p.index}">
+                          <div class="text-2xl">${digItems[p.index].emoji}</div>
+                        </div>
+                      `).join('')}
+                    </div>
+                    <div class="notebook-category" data-category="modern">
+                      <p class="text-sm font-bold text-center mb-2">现代物品</p>
+                      ${chapter5Items.filter(p => p.category === 'modern').map(p => `
+                        <div class="placed-item bg-blue-100 rounded p-2 text-center mb-2 cursor-grab" 
+                          draggable="true" data-item-index="${p.index}">
+                          <div class="text-2xl">${digItems[p.index].emoji}</div>
+                        </div>
+                      `).join('')}
+                    </div>
+                    <div class="notebook-category" data-category="unknown">
+                      <p class="text-sm font-bold text-center mb-2">请教老师</p>
+                      ${chapter5Items.filter(p => p.category === 'unknown').map(p => `
+                        <div class="placed-item bg-gray-100 rounded p-2 text-center mb-2 cursor-grab" 
+                          draggable="true" data-item-index="${p.index}">
+                          <div class="text-2xl">${digItems[p.index].emoji}</div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${chapter5Revealed.length === digItems.length && chapter5Items.length === digItems.length && chapter5Items.every(p => {
+                const item = digItems[p.index];
+                return item.category === p.category || p.category === 'unknown';
+              }) ? `
+                <button onclick="completeChapter(5); currentView='dashboard'; chapter5Revealed=[]; chapter5Items=[]; render();" 
+                  class="w-full mt-6 bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition">
+                  完成第5章 🎉
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChapter6() {
+      const allComplete = [1,2,3,4,5].every(i => currentUser[`chapter${i}Complete`]);
+      
+      return `
+        <div class="gradient-bg min-h-full w-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <button onclick="currentView='dashboard'; render();" 
+              class="mb-4 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">
+              ← 返回地图
+            </button>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+              <div class="text-center mb-6">
+                <div class="text-5xl mb-3">🏆</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">第6章：终极密室挑战</h2>
+                <p class="text-gray-600">使用你收集的密码和印章解锁最终证书！</p>
+              </div>
+              
+              ${allComplete ? `
+                <div class="bg-gradient-to-br from-yellow-100 to-yellow-200 border-4 border-yellow-600 rounded-xl p-8 mb-6">
+                  <div class="text-center">
+                    <div class="text-7xl mb-4">🎓</div>
+                    <h3 class="text-3xl font-bold text-gray-800 mb-4">成都时空穿越任务</h3>
+                    <h4 class="text-2xl font-bold text-purple-700 mb-6">完成证书</h4>
+                    
+                    <div class="bg-white rounded-lg p-6 mb-6">
+                      <p class="text-xl mb-4">特此证明</p>
+                      <p class="text-3xl font-bold text-purple-700 mb-4">${currentUser.displayName}</p>
+                      <p class="text-lg mb-4">成功完成全部6个章节任务</p>
+                      <p class="text-sm text-gray-600 mb-4">完成日期：${new Date().toLocaleDateString('zh-CN')}</p>
+                      
+                      <div class="flex justify-center gap-3 mb-4">
+                        ${[1,2,3,4,5,6].map(i => `
+                          <div class="stamp completed">✓</div>
+                        `).join('')}
+                      </div>
+                      
+                      <p class="text-sm text-gray-600">密码：${currentUser.chapter4Code || '****'}</p>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-lg p-4 mb-4 text-left">
+                      <p class="font-bold mb-2">📚 你学到了：</p>
+                      <ul class="text-sm space-y-1 text-gray-700">
+                        <li>✓ 大熊猫的生活习性和保护知识</li>
+                        <li>✓ 三星堆文明的神秘文物</li>
+                        <li>✓ 考古学家的工作方法</li>
+                        <li>✓ 环境保护的重要性</li>
+                      </ul>
+                    </div>
+                    
+                    <div class="bg-green-50 rounded-lg p-4 text-left">
+                      <p class="font-bold mb-2">🎒 研学准备清单：</p>
+                      <ul class="text-sm space-y-1 text-gray-700">
+                        <li>□ 舒适的运动鞋</li>
+                        <li>□ 防晒帽和防晒霜</li>
+                        <li>□ 水杯和小零食</li>
+                        <li>□ 笔记本和笔</li>
+                        <li>□ 相机（可选）</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <button onclick="completeChapter(6); showConfetti(); showToast('恭喜完成全部任务！', 'success');" 
+                  class="w-full bg-purple-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition">
+                  领取证书 🎉
+                </button>
+              ` : `
+                <div class="text-center py-12">
+                  <div class="text-6xl mb-4">🔒</div>
+                  <p class="text-xl text-gray-600 mb-4">请先完成前5个章节</p>
+                  <p class="text-gray-500">已完成：${getCompletedCount() - (currentUser.chapter6Complete ? 1 : 0)}/5</p>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+
+    function renderAdminGate() {
+      return `
+        <div class="gradient-bg min-h-full w-full flex items-center justify-center p-4">
+          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <div class="text-center mb-6">
+              <div class="text-6xl mb-3">🔒</div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-2">管理员登录</h2>
+              <p class="text-sm text-gray-500">提示：这是静态站的基础保护，密码不要用常用密码。</p>
+            </div>
+            <div class="space-y-3">
+              <input id="admin-username" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:border-purple-500 focus:outline-none" placeholder="管理员账号" value="admin"/>
+              <input id="admin-password" type="password" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:border-purple-500 focus:outline-none" placeholder="管理员密码"/>
+              <button onclick="handleAdminLogin()"
+                class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-purple-700 transition">
+                登录管理员平台
+              </button>
+              <button onclick="currentView='login'; render();"
+                class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-bold text-lg hover:bg-gray-300 transition">
+                返回学生登录
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAdmin() {
+      const sortedUsers = [...allUsers].sort((a, b) => 
+        new Date(b.lastActive) - new Date(a.lastActive)
+      );
+      
+      return `
+        <div class="gradient-bg min-h-full w-full p-4">
+          <div class="max-w-6xl mx-auto">
+            <button onclick="currentView='login'; render();" 
+              class="mb-4 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition">
+              ← 返回登录
+            </button>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+              <div class="text-center mb-6">
+                <div class="text-5xl mb-3">🛠️</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">管理员平台</h2>
+                <p class="text-gray-600">查看所有账号的学习进度（本浏览器数据）</p>
+              </div>
+              
+              <div class="mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="bg-blue-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-blue-600">${allUsers.length}</div>
+                    <div class="text-sm text-gray-600">注册学生</div>
+                  </div>
+                  <div class="bg-green-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-green-600">
+                      ${allUsers.filter(u => getCompletedCountForUser(u) === 6).length}
+                    </div>
+                    <div class="text-sm text-gray-600">完成全部任务</div>
+                  </div>
+                  <div class="bg-purple-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-purple-600">
+                      ${allUsers.filter(u => getCompletedCountForUser(u) > 0).length}
+                    </div>
+                    <div class="text-sm text-gray-600">已开始学习</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-100">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">学生</th>
+                      <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">进度</th>
+                      <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">章节完成</th>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">最后活跃</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    ${sortedUsers.map(user => {
+                      const completed = getCompletedCountForUser(user);
+                      const progress = (completed / 6) * 100;
+                      return `
+                        <tr class="hover:bg-gray-50">
+                          <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                              <span class="text-2xl">${user.avatar}</span>
+                              <div>
+                                <div class="font-medium text-gray-800">${user.displayName}</div>
+                                <div class="text-xs text-gray-500">${user.username}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                              <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: ${progress}%"></div>
+                              </div>
+                              <span class="text-sm font-medium text-gray-700">${completed}/6</span>
+                            </div>
+                          </td>
+                          <td class="px-4 py-3">
+                            <div class="flex justify-center gap-1">
+                              ${[1,2,3,4,5,6].map(i => `
+                                <span class="text-lg">${user[`chapter${i}Complete`] ? '✅' : '⭕'}</span>
+                              `).join('')}
+                            </div>
+                          </td>
+                          <td class="px-4 py-3 text-sm text-gray-600">
+                            ${new Date(user.lastActive).toLocaleString('zh-CN')}
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+              
+              ${allUsers.length === 0 ? `
+                <div class="text-center py-12 text-gray-500">
+                  <div class="text-5xl mb-4">📋</div>
+                  <p>还没有学生注册</p>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function getCompletedCountForUser(user) {
+      let count = 0;
+      for (let i = 1; i <= 6; i++) {
+        if (user[`chapter${i}Complete`]) count++;
+      }
+      return count;
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      
+      let html = '';
+      if (currentView === 'login') html = renderLogin();
+      else if (currentView === 'register') html = renderRegister();
+      else if (currentView === 'dashboard') html = renderDashboard();
+      else if (currentView === 'chapter1') html = renderChapter1();
+      else if (currentView === 'chapter2') html = renderChapter2();
+      else if (currentView === 'chapter3') html = renderChapter3();
+      else if (currentView === 'chapter4') html = renderChapter4();
+      else if (currentView === 'chapter5') html = renderChapter5();
+      else if (currentView === 'chapter6') html = renderChapter6();
+      else if (currentView === 'admin') html = (isAdminAuthed() ? renderAdmin() : renderAdminGate());
+      
+      app.innerHTML = html;
+      
+      if (currentView === 'chapter1') {
+        startChapter1Timer();
+      }
+      
+      if (currentView === 'chapter2') {
+        setupDragAndDrop();
+      }
+      
+      if (currentView === 'chapter5') {
+        setupDigDragAndDrop();
+      }
+    }
+
+    window.handleLogin = function() {
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+      login(username, password);
+    };
+
+    window.handleRegister = function() {
+      const username = document.getElementById('reg-username').value;
+      const password = document.getElementById('reg-password').value;
+      const displayName = document.getElementById('reg-displayname').value;
+      const selected = document.querySelector('.avatar-option.selected');
+      const avatar = selected ? selected.dataset.avatar : avatars[0];
+      register(username, password, displayName, avatar);
+    };
+
+    window.selectAvatar = function(avatar) {
+      document.querySelectorAll('.avatar-option').forEach(el => {
+        el.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+    };
+
+    window.moveMagnifier = function(e) {
+      const magnifier = document.getElementById('magnifier');
+      const forest = document.getElementById('bamboo-forest');
+      if (!magnifier || !forest) return;
+      
+      const rect = forest.getBoundingClientRect();
+      let x, y;
+      
+      if (e.touches) {
+        x = e.touches[0].clientX - rect.left;
+        y = e.touches[0].clientY - rect.top;
+      } else {
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+      }
+      
+      magnifier.style.left = (x - 75) + 'px';
+      magnifier.style.top = (y - 75) + 'px';
+    };
+
+    window.openClueCard = function(index) {
+      stopChapter1Timer();
+      chapter1CurrentClue = index;
+      render();
+    };
+    
+    window.closeClueModal = function() {
+      chapter1CurrentClue = null;
+      render();
+      if (chapter1Timer > 0) {
+        startChapter1Timer();
+      }
+    };
+    
+    window.updateSliderValue = function(value) {
+      const display = document.getElementById('slider-value');
+      if (display) display.textContent = value;
+    };
+    
+    window.selectChoice = function(index) {
+      document.querySelectorAll('.choice-option').forEach((el, i) => {
+        if (i === index) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
+      });
+    };
+    
+    window.selectTap = function(index) {
+      document.querySelectorAll('.tap-option').forEach((el, i) => {
+        if (i === index) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
+      });
+    };
+    
+    window.collectClue = function() {
+      const clue = chapter1HotspotData[chapter1CurrentClue];
+      let correct = false;
+      
+      if (clue.interaction === 'slider') {
+        const slider = document.getElementById('clue-slider');
+        const value = parseInt(slider.value);
+        correct = Math.abs(value - clue.sliderCorrect) <= clue.sliderTolerance;
+      } else if (clue.interaction === 'choice') {
+        const selected = document.querySelector('.choice-option.selected');
+        if (selected) {
+          const index = Array.from(document.querySelectorAll('.choice-option')).indexOf(selected);
+          correct = index === clue.correctChoice;
+        }
+      } else if (clue.interaction === 'tap') {
+        const selected = document.querySelector('.tap-option.selected');
+        if (selected) {
+          const index = Array.from(document.querySelectorAll('.tap-option')).indexOf(selected);
+          correct = index === clue.correctTap;
+        }
+      }
+      
+      if (correct) {
+        chapter1CollectedClues.push(chapter1CurrentClue);
+        chapter1CurrentClue = null;
+        showToast('线索收集成功！✅', 'success');
+        render();
+        if (chapter1Timer > 0) {
+          startChapter1Timer();
+        }
+      } else {
+        showToast('再试试看！仔细想想答案~', 'error');
+      }
+    };
+    
+    window.handleForestClick = function(e) {
+      if (e.target.id === 'bamboo-forest' || e.target.classList.contains('magnifier')) {
+        chapter1WrongTaps++;
+        
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const feedback = document.createElement('div');
+        feedback.className = 'wrong-tap-feedback';
+        feedback.textContent = '这里没有线索！';
+        feedback.style.left = x + 'px';
+        feedback.style.top = y + 'px';
+        e.currentTarget.appendChild(feedback);
+        
+        setTimeout(() => feedback.remove(), 1000);
+        
+        render();
+      }
+    };
+    
+    window.useHint = function() {
+      if (chapter1HintsRemaining === 0) return;
+      
+      const uncollected = chapter1HotspotData
+        .map((spot, i) => ({ spot, i }))
+        .filter(({ i }) => !chapter1CollectedClues.includes(i));
+      
+      if (uncollected.length === 0) return;
+      
+      const randomClue = uncollected[Math.floor(Math.random() * uncollected.length)];
+      const hotspot = document.querySelector(`[data-clue-index="${randomClue.i}"]`);
+      
+      if (hotspot) {
+        hotspot.classList.add('hint-flash');
+        setTimeout(() => hotspot.classList.remove('hint-flash'), 1000);
+      }
+      
+      chapter1HintsRemaining--;
+      showToast('💡 提示：注意闪光的区域！', 'success');
+      render();
+    };
+    
+    window.startChapter1Timer = function() {
+      if (chapter1TimerInterval) return;
+      
+      chapter1TimerInterval = setInterval(() => {
+        chapter1Timer--;
+        
+        if (chapter1Timer <= 0) {
+          stopChapter1Timer();
+          showToast('时间到！但你仍可以继续探索~', 'error');
+        }
+        
+        // Don't render if modal is open to prevent flickering
+        if (chapter1CurrentClue === null) {
+          render();
+        }
+      }, 1000);
+    };
+    
+    window.stopChapter1Timer = function() {
+      if (chapter1TimerInterval) {
+        clearInterval(chapter1TimerInterval);
+        chapter1TimerInterval = null;
+      }
+    };
+    
+    window.makePrediction = function(choice) {
+      if (choice === 0 || choice === 1) {
+        showToast('正确！熊猫大部分时间都在吃和睡！🎉', 'success');
+        setTimeout(() => {
+          stopChapter1Timer();
+          completeChapter(1);
+          currentView = 'dashboard';
+          chapter1CollectedClues = [];
+          chapter1CurrentClue = null;
+          chapter1Timer = 90;
+          chapter1HintsRemaining = 3;
+          chapter1WrongTaps = 0;
+          render();
+        }, 2000);
+      } else {
+        showToast('熊猫其实不太爱运动哦！再想想~', 'error');
+      }
+    };
+
+    window.findClue = function(index) {
+      if (!chapter1Clues.includes(index)) {
+        chapter1Clues.push(index);
+        showToast('发现新线索！', 'success');
+        render();
+      }
+    };
+
+    function setupDragAndDrop() {
+      const foodItems = document.querySelectorAll('.food-item');
+      const tray = document.getElementById('food-tray');
+      
+      foodItems.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('foodId', e.target.dataset.foodId);
+          e.dataTransfer.setData('emoji', e.target.dataset.emoji);
+          e.dataTransfer.setData('name', e.target.dataset.name);
+          e.dataTransfer.setData('health', e.target.dataset.health);
+          e.dataTransfer.setData('energy', e.target.dataset.energy);
+          e.target.classList.add('dragging');
+        });
+        
+        item.addEventListener('dragend', (e) => {
+          e.target.classList.remove('dragging');
+        });
+      });
+      
+      tray.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        tray.classList.add('drag-over');
+      });
+      
+      tray.addEventListener('dragleave', () => {
+        tray.classList.remove('drag-over');
+      });
+      
+      tray.addEventListener('drop', (e) => {
+        e.preventDefault();
+        tray.classList.remove('drag-over');
+        
+        const foodData = {
+          id: e.dataTransfer.getData('foodId'),
+          emoji: e.dataTransfer.getData('emoji'),
+          name: e.dataTransfer.getData('name'),
+          health: parseInt(e.dataTransfer.getData('health')),
+          energy: parseInt(e.dataTransfer.getData('energy'))
+        };
+        
+        chapter2Foods.push(foodData);
+        chapter2Health += foodData.health;
+        chapter2Energy += foodData.energy;
+        
+        chapter2Health = Math.min(100, Math.max(0, chapter2Health));
+        chapter2Energy = Math.min(100, Math.max(0, chapter2Energy));
+        
+        render();
+      });
+    }
+
+    window.makeChoice = function(choiceIndex) {
+      const scene = comicScenes[chapter3Scene];
+      const choice = scene.choices[choiceIndex];
+      
+      if (choice.correct) {
+        showToast(choice.feedback, 'success');
+        chapter3Scene++;
+        
+        if (chapter3Scene >= comicScenes.length) {
+          setTimeout(() => {
+            completeChapter(3);
+            currentView = 'dashboard';
+            chapter3Scene = 0;
+            render();
+          }, 1500);
+        } else {
+          setTimeout(() => render(), 1500);
+        }
+      } else {
+        showToast(choice.feedback, 'error');
+      }
+    };
+
+    window.spinWheel = function() {
+      const wheel = document.getElementById('wheel');
+      const btn = document.getElementById('spin-btn');
+      
+      btn.disabled = true;
+      btn.textContent = '转动中...';
+      
+      const spins = 5 + Math.random() * 3;
+      const degrees = spins * 360 + Math.random() * 360;
+      
+      wheel.style.transform = `rotate(${degrees}deg)`;
+      
+      setTimeout(() => {
+        const artifactIndex = Math.floor(Math.random() * artifacts.length);
+        chapter4CurrentClue = artifacts[artifactIndex];
+        render();
+      }, 3000);
+    };
+
+    window.selectArtifact = function(artifactId) {
+      const selected = artifacts.find(a => a.id === artifactId);
+      
+      if (selected.id === chapter4CurrentClue.id) {
+        chapter4Code.push(selected.digit);
+        chapter4CollectedKnowledge.push({
+          emoji: selected.emoji,
+          name: selected.name,
+          knowledge: selected.knowledge
+        });
+        chapter4Round++;
+        
+        showToast(`正确！获得数字 ${selected.digit}`, 'success');
+        
+        const card = event.target.closest('.artifact-card');
+        if (card) {
+          card.classList.add('revealed');
+        }
+        
+        setTimeout(() => {
+          chapter4CurrentClue = null;
+          render();
+        }, 2000);
+      } else {
+        showToast('不对哦，再仔细看看线索！', 'error');
+      }
+    };
+
+    window.revealTile = function(index) {
+      if (!chapter5Revealed.includes(index)) {
+        chapter5Revealed.push(index);
+        showToast('发现新物品！', 'success');
+        render();
+      }
+    };
+
+    function setupDigDragAndDrop() {
+      const foundItems = document.querySelectorAll('.found-item');
+      const categories = document.querySelectorAll('.notebook-category');
+      const placedItems = document.querySelectorAll('.placed-item');
+      
+      foundItems.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('itemIndex', e.target.dataset.itemIndex);
+          e.dataTransfer.setData('source', 'unplaced');
+        });
+      });
+      
+      placedItems.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('itemIndex', e.target.dataset.itemIndex);
+          e.dataTransfer.setData('source', 'placed');
+        });
+      });
+      
+      categories.forEach(cat => {
+        cat.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          cat.classList.add('drag-over');
+        });
+        
+        cat.addEventListener('dragleave', () => {
+          cat.classList.remove('drag-over');
+        });
+        
+        cat.addEventListener('drop', (e) => {
+          e.preventDefault();
+          cat.classList.remove('drag-over');
+          
+          const itemIndex = parseInt(e.dataTransfer.getData('itemIndex'));
+          const source = e.dataTransfer.getData('source');
+          const category = cat.dataset.category;
+          const item = digItems[itemIndex];
+          
+          if (source === 'placed') {
+            chapter5Items = chapter5Items.filter(p => p.index !== itemIndex);
+          }
+          
+          if (item.category === category || category === 'unknown') {
+            chapter5Items.push({ index: itemIndex, category });
+            
+            if (item.category === category) {
+              showToast('分类正确！', 'success');
+            } else {
+              showToast('好问题！请教老师是个好习惯', 'success');
+            }
+            
+            render();
+          } else {
+            showToast('分类错误！这个物品不属于这个类别', 'error');
+            if (source === 'placed') {
+              render();
+            }
+          }
+        });
+      });
+    }
+
+    async function onConfigChange(config) {
+      render();
+    }
+
+    const capabilities = {
+      recolorables: [],
+      borderables: [],
+      fontEditable: undefined,
+      fontSizeable: undefined
+    };
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ['site_title', config.site_title || defaultConfig.site_title],
+        ['site_subtitle', config.site_subtitle || defaultConfig.site_subtitle],
+        ['welcome_message', config.welcome_message || defaultConfig.welcome_message],
+        ['mission_description', config.mission_description || defaultConfig.mission_description]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: () => capabilities,
+        mapToEditPanelValues
+      });
+    }
+    window.handleAdminLogin = async function() {
+      const u = document.getElementById('admin-username')?.value?.trim();
+      const p = document.getElementById('admin-password')?.value || '';
+      if (u !== ADMIN_USERNAME) { showToast('管理员账号错误', 'error'); return; }
+      const ph = await sha256(p);
+      if (ph !== ADMIN_PASSWORD_SHA256) { showToast('管理员密码错误', 'error'); return; }
+      setAdminAuthed(true);
+      showToast('管理员登录成功', 'success');
+      currentView = 'admin';
+      render();
+    };
+
+    // URL hash 路由：#admin 直接进入管理员登录（不在学生界面露出入口）
+    function applyHashRoute() {
+      const h = (location.hash || '').replace('#', '').replace('/', '').trim().toLowerCase();
+      if (h === 'admin') {
+        currentView = 'admin';
+      }
+    }
+    window.addEventListener('hashchange', () => { applyHashRoute(); render(); });
+
+
+    applyHashRoute();
+    init();
+  </script>
+</body>
+</html>
