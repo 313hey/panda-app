@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chengdu Discovery Mission</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";}
+  .card{border-radius: 24px;}
+</style>
+
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div class="max-w-3xl mx-auto px-4 py-8">
+    <a href="./index.html" class="text-slate-600 hover:text-slate-900">← 返回首页 Back</a>
+
+    <div class="mt-4 bg-white shadow card p-6">
+      <div class="text-5xl">🎭</div>
+      <h1 class="mt-3 text-2xl sm:text-3xl font-extrabold">任务 5：川剧与变脸</h1>
+      <p class="text-slate-600 mt-1">Task 5: Sichuan Opera</p>
+
+      <div class="mt-5 p-4 rounded-2xl bg-amber-50">
+        <div class="font-semibold">内容预习 Preview</div>
+        <p class="mt-2 text-slate-700">川剧中的“变脸”通过机关与手法快速换脸谱，是著名非遗表演。</p>
+        <p class="mt-1 text-slate-600 text-sm">Face-changing in Sichuan opera uses skills and mechanisms to switch masks quickly.</p>
+      </div>
+
+      <div class="mt-6">
+        <div class="font-semibold">小测 Quiz</div>
+        <p class="mt-2 text-slate-800">“变脸”属于哪类文化？</p>
+        <div class="mt-3 space-y-3">
+          
+      <label class="block p-4 rounded-2xl border hover:bg-slate-50 cursor-pointer">
+        <input type="radio" name="q" value="0" class="mr-2"> 
+        <span class="font-medium">非物质文化遗产</span>
+        <span class="text-slate-500 text-sm"> · Intangible cultural heritage</span>
+      </label>
+    
+
+      <label class="block p-4 rounded-2xl border hover:bg-slate-50 cursor-pointer">
+        <input type="radio" name="q" value="1" class="mr-2"> 
+        <span class="font-medium">现代流行舞</span>
+        <span class="text-slate-500 text-sm"> · Pop dance</span>
+      </label>
+    
+
+      <label class="block p-4 rounded-2xl border hover:bg-slate-50 cursor-pointer">
+        <input type="radio" name="q" value="2" class="mr-2"> 
+        <span class="font-medium">电子游戏</span>
+        <span class="text-slate-500 text-sm"> · Video games</span>
+      </label>
+    
+        </div>
+        <div id="msg" class="mt-4 text-sm"></div>
+
+        <div class="mt-6 flex gap-3">
+          <button id="check" class="px-5 py-3 rounded-full bg-slate-900 text-white font-semibold">检查答案 Check</button>
+          <button id="complete" class="px-5 py-3 rounded-full bg-emerald-600 text-white font-semibold" disabled>
+            完成任务 Finish
+          </button>
+        </div>
+
+        <p class="mt-3 text-xs text-slate-500">完成后会自动回到首页并更新进度。</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>
+    const ANSWER = 0;
+    const taskId = "t5";
+    const msg = document.getElementById("msg");
+    const completeBtn = document.getElementById("complete");
+
+    document.getElementById("check").addEventListener("click", () => {
+      const picked = document.querySelector("input[name=q]:checked");
+      if (!picked) {
+        msg.textContent = "请先选择一个选项 / Please pick one option.";
+        msg.className = "mt-4 text-sm text-rose-600";
+        return;
+      }
+      const ok = Number(picked.value) === ANSWER;
+      if (ok) {
+        msg.textContent = "答对了！Correct ✅ 现在可以完成任务。";
+        msg.className = "mt-4 text-sm text-emerald-700";
+        completeBtn.disabled = false;
+      } else {
+        msg.textContent = "不对哦，再试一次 / Not quite. Try again.";
+        msg.className = "mt-4 text-sm text-rose-600";
+        completeBtn.disabled = true;
+      }
+    });
+
+    document.getElementById("complete").addEventListener("click", () => {
+      markComplete(taskId);
+      window.location.href = "./index.html";
+    });
+  </script>
+</body>
+</html>
